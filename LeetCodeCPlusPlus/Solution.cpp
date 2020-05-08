@@ -1753,6 +1753,28 @@ public:
         return result;
     }
 
+    //221. 最大正方形
+    int maximalSquare(vector<vector<char>>& matrix) {
+        int res = 0;
+        if (matrix.size() == 0 || matrix[0].size() == 0) {
+            return res;
+        }
+        vector<vector<int>> dp(matrix.size(),vector<int>(matrix[0].size(),0));
+        for (int i = 0; i < matrix.size(); i++) {
+            for (int j = 0; j < matrix[0].size(); j++) {
+                if (matrix[i][j] == '1') {
+                    if (i == 0 || j == 0) {
+                        dp[i][j] = 1;
+                    } else {
+                        dp[i][j] = 1 + min(min(dp[i-1][j-1], dp[i][j-1]), dp[i-1][j]);
+                    }
+                    res = max(res, dp[i][j]);
+                }
+            }
+        }
+        return res * res;
+    }
+
     //224.基本计算器
     int calculate(string s) {
         int res=0;
@@ -2181,6 +2203,24 @@ public:
             res += nums[i];
         }
         return res;
+    }
+
+    //572.另一个🌲的子树
+    bool isSubtree(TreeNode* s, TreeNode* t) {
+        if (!s || !t) {
+            return false;
+        }
+        return dfsSubTree(s, t) || isSubtree(s->left, t) || isSubtree(s->right, t);
+    }
+
+    bool dfsSubTree(TreeNode* s, TreeNode* t) {
+        if (!s && !t) {
+            return true;
+        }
+        if (s->val != t->val) {
+            return false;
+        }
+        return dfsSubTree(s->left, t->left) && dfsSubTree(s->right, t->right);
     }
 
     //637.二叉树的层平均值
@@ -3133,6 +3173,253 @@ public:
         return  res;
     }
 
+    //面试题40. 最小的k个数
+    //快排找到指定下标k-1的数
+    vector<int> getLeastNumbers(vector<int>& arr, int k) {
+        vector<int> res;
+        if (k == 0 || arr.size() == 0) {
+            return res;
+        }
+        sortQuickNums(arr, k, 0, arr.size()-1);
+        for (int i = 0; i < k; i++) {
+            res.push_back(arr[i]);
+        }
+        return res;
+    }
+
+    void sortQuickNums(vector<int>& arr,int k, int left, int right) {
+        int index = quickSortP(arr, left, right);
+        if (index == k) {
+            return;
+        } else if (index < k) {
+            sortQuickNums(arr, k, index+1, right);
+        } else {
+            sortQuickNums(arr, k, left, index-1);
+        }
+    }
+
+    int quickSortP(vector<int>& arr, int left, int right) {
+        int tmp = arr[left];
+        while (left < right) {
+            while (left < right && arr[right] >= tmp) {
+                right--;
+            }
+            arr[left] = arr[right];
+            while (left < right && arr[left] <= tmp) {
+                left++;
+            }
+            arr[right] = arr[left];
+        }
+        arr[left] = tmp;
+        return left;
+    }
+
+    //面试题44. 数字序列中某一位的数字
+    int findNthDigit(int n) {
+        // 计算该数字由几位数字组成，由1位：digits = 1；2位：digits = 2...
+        long base = 9,digits = 1;
+        while (n - base * digits > 0){
+            n -= base * digits;
+            base *= 10;
+            digits ++;
+        }
+
+        // 计算真实代表的数字是多少
+        int idx = n % digits;  // 注意由于上面的计算，n现在表示digits位数的第n个数字
+        if (idx == 0)idx = digits;
+        long number = 1;
+        for (int i = 1;i < digits;i++)
+            number *= 10;
+        number += (idx == digits)? n/digits - 1:n/digits;
+
+        // 从真实的数字中找到我们想要的那个数字
+        for (int i=idx;i<digits;i++) number /= 10;
+        return number % 10;
+    }
+
+    //面试题46. 把数字翻译成字符串
+    int translateNum(int num) {
+        if (num == 0) {
+            return 1;
+        }
+        vector<int> nums;
+        while (num > 0) {
+            nums.push_back(num%10);
+            num /= 10;
+        }
+        vector<int> dp(nums.size()+1,0);
+        dp[nums.size()] = 1;
+        dp[nums.size() - 1] = 1;
+        for (int i = nums.size()-2; i >= 0; i--) {
+            int tmp = nums[i] + nums[i+1] * 10;
+            if (tmp <= 25 && tmp >= 10) {
+                dp[i] = dp[i+1] + dp[i+2];
+            } else {
+                dp[i] = dp[i+1];
+            }
+        }
+        return dp[0];
+    }
+
+    //面试题48. 最长不含重复字符的子字符串
+    int lengthOfLongestSubstring2(string s) {
+        if (s.size() <= 2) {
+            return s.size();
+        }
+        map<char, int> map;
+        int res = 0;
+        int left = 0;
+        for (int i = 0; i < s.size(); i++) {
+            int index = -1;
+            if (map.find(s[i]) != map.end()) {
+                index = map[s[i]];
+            }
+            if (index >= left) {
+                left = index + 1;
+            } else {
+                res = max(res, i - left + 1);
+            }
+            map[s[i]] = i;
+        }
+        return res;
+    }
+
+    //面试题50. 第一个只出现一次的字符
+    char firstUniqChar(string s) {
+        map<char, int> map;
+        for (int i = 0; i < s.size(); i++) {
+            map[s[i]]++;
+        }
+        for (int i = 0; i < s.size(); i++) {
+            if (map[s[i]] == 1) {
+                return s[i];
+            }
+        }
+        return ' ';
+    }
+
+    //面试题51. 数组中的逆序对
+    int reversePairs(vector<int>& nums) {
+        int res = 0;
+        vector<int> tmp(nums.size(),0);
+        megerSort2(nums, 0, nums.size()-1, tmp, res);
+        return res;
+    }
+
+    void megerSort2(vector<int>& nums, int left, int right, vector<int>& tmp, int& res) {
+        if (left >= right) {
+            return;
+        }
+        int mid = (right-left)/2 + left;
+        megerSort2(nums, left, mid, tmp, res);
+        megerSort2(nums, mid+1, right, tmp, res);
+        meger2(nums, left, mid, right, tmp, res);
+    }
+
+    void meger2(vector<int>& nums, int left, int mid, int right, vector<int>& tmp, int& res) {
+        int i = left;
+        int j = mid+1;
+        int k = 0;
+        while (i <= mid && j <= right) {
+            if (nums[i] > nums[j]) {
+                tmp[k++] = nums[j++];
+                res += mid-i+1;
+            } else {
+                tmp[k++] = nums[i++];
+            }
+        }
+        while (i <= mid) {
+            tmp[k++] = nums[i++];
+        }
+        while (j <= right) {
+            tmp[k++] = nums[j++];
+        }
+        for (int index = 0; left <= right; left++,index++) {
+            nums[left] = tmp[index];
+        }
+    }
+
+    //面试题53 - I. 在排序数组中查找数字 I
+    int searchTarget(vector<int>& nums, int target) {
+        if (nums.size() == 0) {
+            return 0;
+        }
+        int left = 0;
+        int right = nums.size() - 1;
+        int count = 0;
+        while (left < right) {
+            int mid = left + (right - left)/2;
+            if (nums[mid] >= target) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        while (left < nums.size() && nums[left++] == target) {
+            count++;
+        }
+        return count;
+    }
+
+    //面试题53 - II. 0～n-1中缺失的数字
+    int missingNumber(vector<int>& nums) {
+        int left = 0;
+        int right = nums.size() - 1;
+        while (left < right) {
+            int mid = (right-left)/2+left;
+            if (nums[mid] == mid) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        if (nums[left] == left && left == nums.size() - 1) {
+            return left+1;
+        } else {
+            return left;
+        }
+    }
+
+    //面试题54. 二叉搜索树的第k大节点
+    int kthLargest(TreeNode* root, int k) {
+        int res = 0;
+        int count = 0;
+        helperKthLargest(root, k, res, count);
+        return res;
+    }
+
+    void helperKthLargest(TreeNode *root, int k, int& res, int& count) {
+        if (root->right) {
+            helperKthLargest(root->right, k, res, count);
+        }
+        if (++count == k) {
+            res = root->val;
+            return;
+        }
+        if (root->left) {
+            helperKthLargest(root->left, k, res, count);
+        }
+    }
+
+    //面试题55 - I. 二叉树的深度
+    int maxDepth(TreeNode* root) {
+        if (!root) {
+            return 0;
+        }
+        return max(maxDepth(root->left),maxDepth(root->right)) + 1;
+    }
+
+    //面试题55 - II. 平衡二叉树
+    bool isBalanced(TreeNode* root) {
+        if (!root) {
+            return true;
+        }
+        if (abs(maxDepth(root->left) - maxDepth(root->right)) <= 1) {
+            return isBalanced(root->left) && isBalanced(root->right);
+        }
+        return false;
+    }
+
     //面试题56 - I. 数组中数字出现的次数
     //全部^一次就得到a和b ^ 的值，然后判断从右往左第一个不相同的位记为h，再把数组氛围2组，分别^最终得到a和b
     vector<int> singleNumbers(vector<int>& nums) {
@@ -3148,6 +3435,27 @@ public:
         }
         for (auto i : nums) {
             if ((i & h) == 0) {
+                a ^= i;
+            } else {
+                b ^= i;
+            }
+        }
+        return vector<int>{a,b};
+    }
+
+    vector<int> singleNumbers2(vector<int>& nums) {
+        int a = 0;
+        int b = 0;
+        int c = 0;
+        for (auto i : nums) {
+            c ^= i;
+        }
+        int h = 1;
+        while ((c&h) == 0) {
+            h <<= 1;
+        }
+        for (auto i : nums) {
+            if (i&h) {
                 a ^= i;
             } else {
                 b ^= i;
@@ -3196,6 +3504,26 @@ public:
         return res;
     }
 
+    //面试题59 - I. 滑动窗口的最大值
+    //双端队列保存最大值的下标
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        deque<int> dq;
+        vector<int> res;
+        for (int i = 0; i < nums.size(); i++) {
+            while (!dq.empty() && i - dq.front() + 1 > k) {
+                dq.pop_front();
+            }
+            while (!dq.empty() && nums[dq.back()] < nums[i]) {
+                dq.pop_back();
+            }
+            dq.push_back(i);
+            if (i >= k-1) {
+                res.push_back(nums[dq.front()]);
+            }
+        }
+        return res;
+    }
+
     //面试题63.股票的最大利润
     int maxProfit(vector<int>& prices) {
         if (prices.size() < 2) {
@@ -3212,5 +3540,122 @@ public:
         }
         return res;
     }
+
+    //排列字符串包含去重 再写一遍
+    vector<string> permutation22(string s) {
+        vector<string> res;
+        sort(s.begin(), s.end());
+        vector<bool> visited(s.size(),false);
+        dfspermutation22(s, visited, res, "");
+        return res;
+    }
+
+    void dfspermutation22(string s, vector<bool> visited, vector<string>& res, string p) {
+        if (p.size() == s.size()) {
+            res.push_back(p);
+            return;
+        }
+        for (int i = 0; i < s.size(); i++) {
+            if (visited[i]) {
+                continue;
+            }
+            if (i > 0 && s[i-1] == s[i] && !visited[i-1]) {
+                continue;
+            }
+            visited[i] = true;
+            p.push_back(s[i]);
+            dfspermutation22(s, visited, res, p);
+            visited[i] = false;
+            p.pop_back();
+        }
+    }
+
+    //复习快排 再写一遍
+    void sortArray22(vector<int>& nums, int left, int right) {
+        if (left >= right) {
+            return;
+        }
+        int index = quickSort22(nums, left, right);
+        sortArray22(nums, left, index-1);
+        sortArray22(nums, index+1, right);
+    }
+
+    int quickSort22(vector<int>& nums, int left, int right) {
+        int tmp = nums[left];
+        while (left < right) {
+            while (left < right && nums[right] >= tmp) {
+                right--;
+            }
+            nums[left] = nums[right];
+            while (left < right&& nums[left] <= tmp) {
+                left++;
+            }
+            nums[right] = nums[left];
+        }
+        nums[left] = tmp;
+        return left;
+    }
+    //复习插入排序 再写一遍
+    void insetSort(vector<int>& nums) {
+        for (int i = 0; i < nums.size(); i++) {
+            int insert = nums[i];
+            int j = i;
+            while (j > 0 && nums[j-1] > insert) {
+                nums[j] = nums[j-1];
+                j--;
+            }
+            nums[j] = insert;
+        }
+    }
+
+    //复习希尔排序
+    void shellSort(vector<int>& nums, int count) {
+        int interval = count / 2;
+        while (interval > 0) {
+            for (int i = interval; i < count; i++) {
+                int insert = nums[i];
+                int j = i-interval;
+                while (j >= 0 && nums[j] > insert) {
+                    nums[j+interval] = nums[j];
+                    j -= interval;
+                }
+                nums[j+interval] = insert;
+            }
+            interval /= 2;
+        }
+    }
+
+    //复习归并排序
+    void megerSort(vector<int>& nums, int left, int right, vector<int>& tmp) {
+        if (left < right) {
+            int mid = left + (right - left)/2;
+            megerSort(nums, left, mid, tmp);
+            megerSort(nums, mid+1, right, tmp);
+            meger(nums, left, mid, right, tmp);
+        }
+    }
+
+    void meger(vector<int>& nums, int left, int mid, int right, vector<int>& tmp) {
+        int i = left;
+        int j = mid+1;
+        int k = 0;
+        while (i <= mid && j <= right) {
+            if (nums[i] > nums[j]) {
+                tmp[k++] = nums[j++];
+            } else {
+                tmp[k++] = nums[i++];
+            }
+        }
+        while (i <= mid) {
+            tmp[k++] = nums[i++];
+        }
+        while (j <= right) {
+            tmp[k++] = nums[j++];
+        }
+        for (int index = 0; left <= right; left++,index++) {
+            nums[left] = tmp[index];
+        }
+    }
+
 };
 

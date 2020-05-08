@@ -48,6 +48,7 @@ int main(int argc, const char * argv[]) {
     a.push_back(3);
     a.push_back(2);
     a.push_back(5);
+    s.shellSort(a,a.size());
     s.verifyPostorder(a);
     s.permute(a);
     s.canPartitionKSubsets(a,3);
@@ -131,6 +132,9 @@ int main(int argc, const char * argv[]) {
 
     s.headCreateListNode(aaaaa);
     s.tailCreateListNode(aaaaa);
+    s.findNthDigit(18);
+    s.translateNum(12258);
+    s.firstUniqChar("aadadaad");
 //    s.oddEvenList(node);
 //    s.reorderList(node);
 //    a.push_back(4);
