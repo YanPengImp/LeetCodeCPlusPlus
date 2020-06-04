@@ -46,15 +46,17 @@ int main(int argc, const char * argv[]) {
     a.push_back(1);
     a.push_back(6);
     a.push_back(3);
-    a.push_back(2);
-    a.push_back(5);
-    s.shellSort(a,a.size());
+    a.push_back(4);
+    a.push_back(8);
+//    s.shellSort(a,a.size());
+    s.heapSort(a,a.size());
     s.verifyPostorder(a);
     s.permute(a);
     s.canPartitionKSubsets(a,3);
     s.exchange(a);
     s.permutation("abc");
 
+    s.test();
 
     vector<string> words;
     words.push_back("this");
@@ -117,9 +119,19 @@ int main(int argc, const char * argv[]) {
     aaaaa.push_back(13);
     aaaaa.push_back(14);
 
-    TreeNode *xx = new TreeNode(-2);
-//    xx->left = new TreeNode(2);
-    xx->right = new TreeNode(-3);
+    TreeNode *root = new TreeNode(2);
+    root->left = new TreeNode(2);
+    s.isValidBST(root);
+
+    TreeNode *xx = new TreeNode(3);
+    xx->left = new TreeNode(2);
+    xx->left->left = new TreeNode(2);
+    xx->left->right = new TreeNode(1);
+    xx->right = new TreeNode(3);
+    xx->right->left = new TreeNode(2);
+    xx->right->right = new TreeNode(0);
+
+    s.pseudoPalindromicPaths(xx);
     s.recoverTree(xx);
     s.rob(aaaaa);
 
@@ -135,6 +147,14 @@ int main(int argc, const char * argv[]) {
     s.findNthDigit(18);
     s.translateNum(12258);
     s.firstUniqChar("aadadaad");
+
+    vector<int> nums{4,5,0,5};
+    s.subarraysDivByK(nums,5);
+    s.permutation33("abc");
+    s.minDistance("horse","ors");
+    vector<int> hhh = vector<int>{1,3};
+    vector<int> www = vector<int>{1};
+    s.maxArea(5,4,hhh,www);
 //    s.oddEvenList(node);
 //    s.reorderList(node);
 //    a.push_back(4);

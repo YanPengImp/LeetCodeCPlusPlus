@@ -107,6 +107,59 @@ public:
         return  res;
     }
 
+    //5. 最长回文子串
+    string longestPalindrome(string s) {
+        string res = "";
+        for (int i = 0; i < s.size(); i++) {
+            string s1 = longestPalindromeSearch(s, i, i);
+            string s2 = longestPalindromeSearch(s, i, i+1);
+            res = s1.size() > res.size() ? s1 : res;
+            res = s2.size() > res.size() ? s2 : res;
+        }
+        return res;
+    }
+
+    string longestPalindromeSearch(string s, int left, int right) {
+        while (left >= 0 && right < s.size() && s[left] == s[right]) {
+            left--;
+            right++;
+        }
+        return s.substr(left+1, right-left+1);
+    }
+
+    //10.正则表达式匹配
+    bool isMatch(string s, string p) {
+        int m = s.size();
+        int n = p.size();
+        if (m == 0 && n == 0) {
+            return true;
+        }
+        if (m == 0 || n == 0) {
+            return false;
+        }
+        vector<vector<bool>> dp(m+1,vector<bool>(n+1,false));
+        dp[0][0] = true;
+        for (int i = 1; i <= n; i++) {
+            if (i >= 2 && p[i-1] == '*' && p[i-2]) {
+                dp[0][i] = dp[0][i-2];
+            }
+        }
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (s[i-1] == p[j-1] || p[j-1] == '.') {
+                    dp[i][j] = dp[i-1][j-1];
+                } else if (p[j-1] == '*') {
+                    if (p[j-2] != s[i-1] && p[j-2] != '.') {
+                        dp[i][j] = dp[i][j-2];
+                    } else {
+                        dp[i][j] = dp[i-1][j] || dp[i][j-2] || dp[i][j-1];
+                    }
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
     //12.整数转罗马数字
     string intToRoman(int num) {
         map<int,string> map = {{1,"I"},{2,"II"},{3,"III"},{4,"IV"},{5,"V"},{6,"VI"},{7,"VII"},{8,"VIII"},{9,"IX"},{10,"X"},{20,"XX"},{30,"XXX"},{40,"XL"},{50,"L"},{60,"LX"},{70,"LXX"},{80,"LXXX"},{90,"XC"},{100,"C"},{200,"CC"},{300,"CCC"},{400,"CD"},{500,"D"},{600,"DC"},{700,"DCC"},{800,"DCCC"},{900,"CM"},{1000,"M"},{2000,"MM"},{3000,"MMM"}};
@@ -295,6 +348,26 @@ public:
         return tmp->next;
     }
 
+    //32.最长有效括号
+    int longestValidParentheses(string s) {
+        stack<int> stack;
+        stack.push(-1);
+        int res = 0;
+        for (int i = 0; i < s.size(); i++) {
+            if (s[i] == '(') {
+                stack.push(i);
+            } else {
+                stack.pop();
+                if (stack.empty()) {
+                    stack.push(i);
+                } else {
+                    res = max(res, i - stack.top());
+                }
+            }
+        }
+        return res;
+    }
+
     //33.搜索排序旋转数组
     int search(vector<int>& nums, int target) {
         int left = 0;
@@ -347,6 +420,29 @@ public:
             water += max(0, level - height[i]);
         }
         return water;
+    }
+
+    int trap2(vector<int>& height) {
+        if (height.size() < 1) {
+            return 0;
+        }
+        int left = 0;
+        int right = height.size()-1;
+        int leftM = height[left];
+        int rightM = height[right];
+        int res = 0;
+        while (left < right) {
+            leftM = max(leftM,height[left]);
+            rightM = max(rightM,height[right]);
+            if (leftM < rightM) {
+                res += (leftM - height[left]);
+                left++;
+            } else {
+                res += (rightM - height[right]);
+                right--;
+            }
+        }
+        return res;
     }
 
     //46.全排列
@@ -681,6 +777,30 @@ public:
         return res;
     }
 
+    //69. x 的平方根
+    int mySqrt(int x) {
+        if (x <= 1) {
+            return 1;
+        }
+        int left = 0;
+        int right = x;
+        int res = 0;
+        while (left < right) {
+            res = (right + left)/2;
+            if (res * res == x) {
+                return res;
+            }
+            if (res * res == x || (res * res < x && (res+1)*(res+1) > x)) {
+                return res;
+            } else if (res * res < x) {
+                left = res;
+            } else {
+                right = res;
+            }
+        }
+        return res;
+    }
+
     //71.简化路径
     string simplifyPath(string path) {
         path += "/";
@@ -711,6 +831,33 @@ public:
             res.erase(res.end() - 1);
         }
         return res;
+    }
+
+    //72.编辑距离
+    //s1 通过改变次数转为s2
+    //dp[i][j]表示s1[0~i-1]转到s2[0~j-1]所需步数
+    int minDistance(string word1, string word2) {
+        int m = word1.size();
+        int n = word2.size();
+        vector<vector<int>> dp(m+1,vector<int>(n+1,0));
+        for (int i = 0; i <= m; i++) {
+            dp[i][0] = i;
+        }
+        for (int j = 0; j <= n; j++) {
+            dp[0][j] = j;
+        }
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (word1[i-1] == word2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1];
+                } else {
+                    int minN = min(dp[i][j-1],dp[i-1][j]);
+                    minN = min(minN,dp[i-1][j-1]);
+                    dp[i][j] = minN + 1;
+                }
+            }
+        }
+        return dp[m][n];
     }
 
     //74.搜索二维矩阵
@@ -1218,6 +1365,19 @@ public:
         return node;
     }
 
+    ///111.二叉树最小深度
+    int minDepth(TreeNode* root) {
+        if (root == nullptr) {
+            return 0;
+        }
+        int left = minDepth(root->left);
+        int right = minDepth(root->right);
+        if (left == 0 || right == 0) {
+            return left + right + 1;
+        }
+        return min(left, right) + 1;
+    }
+
     //116.填充每个节点的下一个右侧节点指针
     Node* connect(Node* root) {
         nextNode(root);
@@ -1312,6 +1472,10 @@ public:
     }
 
     //128.最长连续序列
+    //储存已key为边界的最长序列长度
+    //比如123 56
+    //map[1] = 3 map[3] = 3 map[5] = 2 map[6] = 2
+    //此时扫描到4，那么会去找3和5是否存在，就是3+2+1的长度变为123456了。
     int longestConsecutive(vector<int>& nums) {
         map<int,int> map;
         int result = 0;
@@ -1693,6 +1857,26 @@ public:
         return newh;
     }
 
+    //209.长度最小的子数组
+    //连续子数组和>=S  长度最小
+    int minSubArrayLen(int s, vector<int>& nums) {
+        int sum = 0;
+        int len = 0;
+        int left = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            sum += nums[i];
+            while (sum >= s) {
+                if (len == 0) {
+                    len = i-left+1;
+                } else {
+                    len = min(len, i-left+1);
+                }
+                sum -= nums[left++];
+            }
+        }
+        return len;
+    }
+
     //213.打家劫舍
     int rob2(vector<int>& nums) {
         if (nums.size() == 0) {
@@ -1846,6 +2030,22 @@ public:
         node->next = node->next->next;
     }
 
+    //238.除自身以外数组的乘积
+    vector<int> productExceptSelf(vector<int>& nums) {
+        vector<int> A(nums.size(), 1);
+        vector<int> B(nums.size(), 1);
+        for (int i = 1; i < nums.size(); i++) {
+            A[i] = A[i-1] * nums[i-1];
+        }
+        for (int i = nums.size() - 2; i >= 0; i--) {
+            B[i] = B[i+1] * nums[i+1];
+        }
+        for (int i = 0; i < nums.size(); i++) {
+            A[i] *= B[i];
+        }
+        return A;
+    }
+
     //289.生命游戏
     void gameOfLife(vector<vector<int>>& board) {
         vector<vector<int>> status(board.size(), vector<int>(board[0].size(), 0));
@@ -1976,6 +2176,26 @@ public:
             res ^= t[i+1];
         }
         return res;
+    }
+
+    //392.判断子序列
+    bool isSubsequence(string s, string t) {
+        int m = s.size();
+        int n = t.size();
+        if (m > n) {
+            return false;
+        }
+        int s1 = 0;
+        int t1 = 0;
+        while (s1 < m && t1 < n) {
+            if (s[s1] == t[t1]) {
+                s1++;
+                t1++;
+            } else {
+                t1++;
+            }
+        }
+        return s1 == m;
     }
 
     //464.我能赢吗
@@ -2195,6 +2415,22 @@ public:
         return (int)wall.size() - maxnum;
     }
 
+    //560. 和为K的子数组
+    int subarraySum(vector<int>& nums, int k) {
+        map<int, int> map;
+        map[0] = 1;
+        int count = 0;
+        int sum = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            sum += nums[i];
+            int c = sum - k;
+            if (map.find(c) != map.end()) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     //561.数组拆分
     int arrayPairSum(vector<int>& nums) {
         sort(nums.begin(), nums.end());
@@ -2266,6 +2502,43 @@ public:
         return root;
     }
 
+    //674.最长连续递增序列
+    int findLengthOfLCIS(vector<int>& nums) {
+        if (nums.size() == 0) {
+            return 0;
+        }
+        int res = 1;
+        int count = 1;
+        for (int i = 1; i < nums.size(); i++) {
+            if (nums[i] > nums[i-1]) {
+                count++;
+                res = max(res, count);
+            } else {
+                count = 1;
+            }
+        }
+        return res;
+    }
+
+    //680. 验证回文字符串 Ⅱ
+    bool validPalindrome(string s) {
+        return validString(s, 0, s.size()-1, false);
+    }
+
+    bool validString(string s, int left, int right, bool deleted) {
+        while (left < right) {
+            if (s[left] != s[right]) {
+                if (deleted) {
+                    return false;
+                }
+                return validString(s, left+1, right, true) || validString(s, left, right-1, true);
+            }
+            left++;
+            right--;
+        }
+        return true;
+    }
+
     //693.交替二进制数
     bool hasAlternatingBits(int n) {
         bool last = (n % 2 != 0);
@@ -2322,6 +2595,22 @@ public:
         return false;
     }
 
+    //714. 买卖股票的最佳的时机
+    //买入再卖出会有一次手续费fee
+    //cash 表示第i天不持有股票的利润 hold表示第i天持有股票的利润
+    int maxProfit(vector<int>& prices, int fee) {
+        if (prices.size() == 0) {
+            return 0;
+        }
+        int cash = 0;
+        int hold = -prices[0];
+        for (int i = 1; i < prices.size(); i++) {
+            cash = max(cash, hold + prices[i] - fee);
+            hold = max(hold, cash - prices[i]);
+        }
+        return cash;
+    }
+
     //725.分隔链表
     vector<ListNode*> splitListToParts(ListNode* root, int k) {
         ListNode *p = root;
@@ -2366,6 +2655,29 @@ public:
             head = head->next;
         }
         return res;
+    }
+
+    //837.新21点
+    double new21Game(int N, int K, int W) {
+        //获胜条件：得分S<=N
+        //K为0，不能抽，S必定<=N
+        if (K == 0) return 1.0;
+        //S为K-1时，抽到W，此为游戏结束时最大得分，如果都<=N，则也是必赢
+        if (K+W-1 <= N) return 1.0;
+
+        //由第二个条件取反，此时 N<K+W-1，就不用判断N+1跟K+W大小了
+        vector<double> dp(K + W);
+        //[K,N]为1，[N+1,K+W-1]为0
+        for (int i = K; i <= N; i++) {
+            dp[i] = 1.0;
+        }
+        //[K,N]长度N-K+1
+        dp[K - 1] = 1.0 * (N - K + 1) / W;
+        for (int i = K - 2; i >= 0; i--) {
+            //dp[x]-dp[x+1]推导得来
+            dp[i] = dp[i + 1] - (dp[i + W + 1] - dp[i + 1]) / W;
+        }
+        return dp[0];
     }
 
     //876.删除链表中间节点
@@ -2441,6 +2753,83 @@ public:
         return gcd(b, a%b);
     }
 
+    //974.和可被K整除的子数组
+    int subarraysDivByK(vector<int>& A, int K) {
+        unordered_map<int, int> map{{0,1}};
+        int sum = 0;
+        int res = 0;
+        for (auto num : A) {
+            sum += num;
+            int mod = (sum % K + K) % K;
+            if (map.count(mod)) {
+                res += map[mod];
+            }
+            ++map[mod];
+        }
+        return res;
+    }
+
+    //978. 最长湍流子数组
+    int maxTurbulenceSize(vector<int>& A) {
+        int up = 1;
+        int down = 1;
+        int res = 1;
+        for (int i = 0; i < A.size()-1; i++) {
+            if (A[i] > A[i+1]) {
+                up = down + 1;
+                down = 1;
+            } else if (A[i] < A[i+1]) {
+                down = up + 1;
+                up = 1;
+            } else {
+                down = 1;
+                up = 1;
+            }
+            res = max(max(up, down), res);
+        }
+        return res;
+    }
+
+    //979.在二叉树中分配硬币
+    int distributeCoins(TreeNode* root) {
+        int val = 0;
+        coins(root, val);
+        return val;
+    }
+
+    int coins(TreeNode *node, int &val) {
+        if (node == nullptr) {
+            return 0;
+        }
+        int left = coins(node->left, val);
+        int right = coins(node->right, val);
+        val += abs(left) + abs(right);
+        return left + right + node->val - 1;
+    }
+
+    //1031.两个非重叠子数组的最大和
+    // 左右两个子数组分别个数为L和M 使得总和最大
+    int maxSumTwoNoOverlap(vector<int>& A, int L, int M) {
+        int res = 0;
+        int maxL = 0;
+        int maxM = 0;
+        vector<int> preSum(A.size()+1,0);
+        for (int i = 0; i < A.size(); i++) {
+            preSum[i+1] = A[i] + preSum[i];
+        }
+        //当L在左边的时候 从下标为L的位置开始遍历
+        for (int i = L; i <= A.size()-M; i++) {
+            maxL = max(maxL, preSum[i] - preSum[i-L]);
+            res = max(res, maxL + (preSum[i+M]-preSum[i]));
+        }
+        //当M在左边的时候 从下标为M的位置开始遍历
+        for (int i = M; i <= A.size()-L; i++) {
+            maxM = max(maxM, preSum[i] - preSum[i-M]);
+            res = max(res, maxM + (preSum[i+L]-preSum[i]));
+        }
+        return res;
+    }
+
     //1033.移动石子直至连续
     vector<int> numMovesStones(int a, int b, int c) {
         if (a>b) {
@@ -2479,6 +2868,24 @@ public:
         return res[n];
     }
 
+    //1143.最长公共子序列
+    //子序列是不连续的，子数组是连续的，注意区分
+    int longestCommonSubsequence(string text1, string text2) {
+        int m = text1.size();
+        int n = text2.size();
+        vector<vector<int>> dp(m+1,vector<int>(n+1,0));
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (text1[i-1] == text2[j-1]) {
+                    dp[i][j] = dp[i-1][j-1] + 1;
+                } else {
+                    dp[i][j] = max(dp[i][j-1], dp[i-1][j]);
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
     //1171.从链表中删去总和值为零的连续节点
     ListNode* removeZeroSumSublists(ListNode* head) {
         ListNode *cur = new ListNode(0);
@@ -2513,6 +2920,96 @@ public:
         return res;
     }
 
+    //1371. 每个元音包含偶数次的最长子字符串
+    int findTheLongestSubstring(string s) {
+        // aeiou每个元音用一个bit一共5个bit，32种奇偶次数组合状态，比如10101可以表示aiu出现奇数次数
+        // oe则出现偶数次数，每当遍历一个字符，就可以改变当前的aeiou出现的奇偶次数，也即是改变状态
+        // 显然，如果两次出现了同样的状态，假设第一次出现在i处
+        // 第二次出现在j处，那么i+1-j之间的字符串肯定是满足aeiou出现均为偶数次数的
+        // 因为只有经历了偶数个aeiou，才能回到之前的状态，为了使得合理的字符串最长
+        // 那么第一次出现此状态时，就需要记录到下标，然后下次遇到相同状态，计算最大长度
+        unordered_map<int, int> map;
+        int state = 0x0;
+        int res = 0;
+        // 初始化，刚开始时，state的状态已经是0x00000，已经出现，因此必须记录
+        map[state] = 0;
+        for (int i = 0; i < s.size(); i++) {
+            // a e i o u 分别在第12345个bit，来表示出现次数的奇偶性
+            if (s[i] == 'a') {
+                state ^= 1<<0;
+            } else if (s[i] == 'e') {
+                state ^= 1<<1;
+            } else if (s[i] == 'i') {
+                state ^= 1<<2;
+            } else if (s[i] == 'o') {
+                state ^= 1<<3;
+            } else if (s[i] == 'u') {
+                state ^= 1<<4;
+            }
+            if (map.find(state) != map.end()) {
+                res = max(res, i - map[state] + 1);
+            } else {
+                map[state] = i + 1;
+            }
+        }
+        return res;
+    }
+
+    //1431. 拥有最多糖果的孩子
+    vector<bool> kidsWithCandies(vector<int>& candies, int extraCandies) {
+        vector<bool> res(candies.size(), false);
+        int max = 0;
+        for (int i = 0; i < candies.size(); i++) {
+            if (candies[i] >= max) {
+                max = candies[i];
+            }
+        }
+        for (int i = 0; i < candies.size(); i++) {
+            if (candies[i] + extraCandies >= max) {
+                res[i] = true;
+            }
+        }
+        return res;
+    }
+
+    //1457. 二叉树中的伪回文路径
+    int pseudoPalindromicPaths (TreeNode* root) {
+        vector<int> route;
+        int res = 0;
+        searchRoute(root,route,res);
+        return res;
+    }
+
+    void searchRoute(TreeNode *root, vector<int> &route, int & res) {
+        if (root->left == nullptr && root->right == nullptr) {
+            route.push_back(root->val);
+            if (isValid(route)) {
+                res += 1;
+            }
+            route.pop_back();
+            return;
+        }
+        route.push_back(root->val);
+        if (root->left) {
+            searchRoute(root->left,route,res);
+        }
+        if (root->right) {
+            searchRoute(root->right,route,res);
+        }
+        route.pop_back();
+    }
+
+    bool isValid(vector<int> route) {
+        set<int> set;
+        for (auto i : route) {
+            if (set.find(i) != set.end()) {
+                set.erase(i);
+            } else {
+                set.insert(i);
+            }
+        }
+        return set.size() <= 1;
+    }
 
     //每日一题4.7
     void rotate111(vector<vector<int>>& matrix) {
@@ -2558,6 +3055,166 @@ public:
             tmp.pop_back();
         }
     }
+    //面试题01.01 判断字符是否唯一
+    bool isUnique(string astr) {
+        set<char> set;
+        for (auto c : astr) {
+            if (set.find(c) != set.end()) {
+                return false;
+            } else {
+                set.insert(c);
+            }
+        }
+        return true;
+    }
+
+    //面试题01.02 判断是否互为字符重排
+    bool CheckPermutation(string s1, string s2) {
+        if (s1.size() != s2.size()) {
+            return false;
+        }
+        unordered_map<char, int> map;
+        for (auto c : s1) {
+            if (map.find(c) != map.end()) {
+                map[c]++;
+            } else {
+                map[c] = 1;
+            }
+        }
+        for (auto c : s2) {
+            if (map.find(c) != map.end()) {
+                map[c]--;
+                if (map[c] == 0) {
+                    map.erase(c);
+                }
+            } else {
+                map[c] = 1;
+            }
+        }
+        return map.size() == 0;
+    }
+
+    //面试题01.04 回文排列
+    //判断字符是某个回文串的排列
+    bool canPermutePalindrome(string s) {
+        set<char> set;
+        for (auto c : s) {
+            if (set.find(c) != set.end()) {
+                set.erase(c);
+            } else {
+                set.insert(c);
+            }
+        }
+        return set.size() <= 1;
+    }
+
+    //面试题01.05 一次编辑
+    bool oneEditAway(string first, string second) {
+        int m = first.size();
+        int n = second.size();
+        if (abs(m-n) > 1) {
+            return false;
+        }
+        int i = 0;
+        int j = 0;
+        bool edit = false;
+        while (i < m && j < n) {
+            if (first[i] == second[j]) {
+                i++;
+                j++;
+            } else {
+                if (edit) {
+                    return false;
+                }
+                edit = true;
+                if (m > n) {
+                    i++;
+                } else if (m < n) {
+                    j++;
+                } else {
+                    i++;
+                    j++;
+                }
+            }
+        }
+        if (edit && (i != m || j != n)) {
+            return false;
+        }
+        return true;
+    };
+
+    //面试题01.06 字符串压缩
+    string compressString(string S) {
+        if (S.size() < 2) {
+            return S;
+        }
+        string res;
+        int i = 0;
+        char c = S[0];
+        int count = 0;
+        while (i < S.size()) {
+            if (c != S[i]) {
+                res.push_back(c);
+                res += to_string(count);
+                c = S[i];
+                count = 1;
+            } else {
+                count++;
+            }
+            if (i == S.size()-1) {
+                res.push_back(c);
+                res += to_string(count);
+            }
+            i++;
+        }
+        if (res.size() > S.size()) {
+            return S;
+        } else {
+            return res;
+        }
+    }
+
+    //面试题01.08 零矩阵
+    //把0所在的行列都置为0
+    void setZeroes(vector<vector<int>>& matrix) {
+        vector<vector<int>> tmp = matrix;
+        for (int i = 0; i < tmp.size(); i++) {
+            for (int j = 0; j < tmp[0].size(); j++) {
+                if (tmp[i][j] == 0) {
+                    transformZero(matrix, i, j);
+                }
+            }
+        }
+    }
+
+    void transformZero(vector<vector<int>>& matrix, int row, int col) {
+        for (int i = 0; i < matrix.size(); i++) {
+            matrix[i][col] = 0;
+        }
+        for (int i = 0; i < matrix[0].size(); i++) {
+            matrix[row][i] = 0;
+        }
+    }
+
+    //面试题01.09 字符串轮转
+    //abcd bcda
+    bool isFlipedString(string s1, string s2) {
+        if (s1.size() != s2.size()) {
+            return false;
+        }
+        int len = s1.size();
+        s2 += s2;
+        for (int i = 0; i < len; i++) {
+            if (s1[0] == s2[i]) {
+                string tmp = s2.substr(i,len);
+                if (tmp == s1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     //面试题02.01
     //使用set保存之前存在的节点 时间复杂度O(n),空间复杂的O(n)
     //不使用额外空间的话就是2层循环 删除后面的链表节点 时间复杂度O(n*n)
@@ -2579,6 +3236,39 @@ public:
         return head;
     }
 
+    //面试题02.04 分割链表
+    //小于x的都位于大于x的左边
+    ListNode* partition2(ListNode* head, int x) {
+        ListNode * less = new ListNode(0);
+        ListNode * more = new ListNode(0);
+        ListNode *curLess = less;
+        ListNode *curMore = more;
+        while (head) {
+            if (head->val < x) {
+                curLess->next = head;
+                curLess = curLess->next;
+            } else {
+                curMore->next = head;
+                curMore = curMore->next;
+            }
+            head = head->next;
+        }
+        curMore->next = nullptr;
+        curLess->next = more->next;
+        return less->next;
+    }
+
+    //面试题02.07 链表相交
+    ListNode *getIntersectionNode2(ListNode *headA, ListNode *headB) {
+        ListNode *A = headA;
+        ListNode *B = headB;
+        while (A != B) {
+            A = A == nullptr ? headB : A->next;
+            B = B == nullptr ? headA : B->next;
+        }
+        return A;
+    }
+
     //面试题03.数组中的重复数字
     int findRepeatNumber(vector<int>& nums) {
         for (int i = 0; i < nums.size(); i++) {
@@ -2592,6 +3282,139 @@ public:
             }
         }
         return -1;
+    }
+
+    //面试题04.01 节点间通路
+    bool findWhetherExistsPath(int n, vector<vector<int>>& graph, int start, int target) {
+        vector<vector<int>> v(n);
+        vector<bool> visited(n,false);
+        for (auto i : graph) {
+            v[i[0]].push_back(i[1]);
+        }
+        return dfsFindWhetherExistsPath(v, visited, start, target);
+    }
+
+    bool dfsFindWhetherExistsPath(vector<vector<int>>& v, vector<bool> & visited, int start, int target) {
+        if (start == target) {
+            return true;
+        }
+        visited[start] = true;
+        for (auto i : v[start]) {
+            if (!visited[i]) {
+                if (dfsFindWhetherExistsPath(v, visited, i, target)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    //面试题04.02 最小高度🌲
+    TreeNode* sortedArrayToBST2(vector<int>& nums) {
+        int n = nums.size();
+        return sortedArrayToBST2(nums, 0, n-1);
+    }
+
+    TreeNode *sortedArrayToBST2(vector<int>& nums, int left, int right) {
+        if (left > right) {
+            return nullptr;
+        }
+        int mid = left + (right-left+1)/2;
+        TreeNode *node = new TreeNode(nums[mid]);
+        node->left = sortedArrayToBST2(nums, left, mid-1);
+        node->right = sortedArrayToBST2(nums, mid+1, right);
+        return node;
+    }
+
+    //面试题 04.03. 特定深度节点链表
+    vector<ListNode*> listOfDepth(TreeNode* tree) {
+        vector<ListNode *> res;
+        queue<TreeNode *> q;
+        if (!tree) {
+            return res;
+        }
+        q.push(tree);
+        while (!q.empty()) {
+            int s = q.size();
+            vector<int> tmp;
+            while (s > 0) {
+                TreeNode *node = q.front();
+                tmp.push_back(node->val);
+                if (node->left) {
+                    q.push(node->left);
+                }
+                if (node->right) {
+                    q.push(node->right);
+                }
+                q.pop();
+                s--;
+            }
+            ListNode *list = vectorToList(tmp);
+            res.push_back(list);
+        }
+        return res;
+    }
+
+    ListNode *vectorToList(vector<int>& nums) {
+        ListNode *node = new ListNode(-1);
+        ListNode *h = node;
+        for (auto i : nums) {
+            ListNode *t = new ListNode(i);
+            h->next = t;
+            h = h->next;
+        }
+        return node->next;
+    }
+
+    //面试题 04.05. 合法二叉搜索树
+    //中序遍历 升序
+    bool isValidBST(TreeNode* root) {
+        return midTraverse(root, LONG_MIN, LONG_MAX);
+    }
+
+    bool midTraverse(TreeNode *root, long min, long max) {
+        if (!root) {
+            return true;
+        }
+        if (root->val > min && root->val < max) {
+            return midTraverse(root->left, min, root->val) && midTraverse(root->right, root->val, max);
+        }
+        return false;
+    }
+
+    //面试题 04.06. 后继者
+    //二叉搜索树中某个节点的后续节点
+    TreeNode* inorderSuccessor(TreeNode* root, TreeNode* p) {
+        vector<TreeNode *> res;
+        midNode(root, res);
+        for (int i = 0; i < res.size(); i++) {
+            if (res[i]->val == p->val && i != res.size()-1) {
+                return res[i+1];
+            }
+        }
+        return nullptr;
+    }
+
+    void midNode(TreeNode *root, vector<TreeNode *>& res) {
+        midNode(root->left, res);
+        res.push_back(root);
+        midNode(root->right, res);
+    }
+
+    //面试题 04.08. 首个共同祖先
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if (!root || root == p || root == q) {
+            return root;
+        }
+        TreeNode *left = lowestCommonAncestor(root->left, p, q);
+        TreeNode *right = lowestCommonAncestor(root->right, p, q);
+        if (left && right) {
+            return root;
+        }
+        if (left && !right) {
+            return left;
+        }
+        return right;
     }
 
     //面试题04. 二维数组中的查找
@@ -2694,6 +3517,78 @@ public:
         node->right = buildTreeFun22(preprder, inorder, preL + left + 1, preR, index + 1, inR);
         return node;
     }
+
+    //面试题08.07无重复字符串的排列组合
+    vector<string> permutation33(string S) {
+        vector<string> res;
+        vector<bool> visited(S.size(),false);
+        string p = "";
+        dfsPermutation33(S, p, res, visited);
+        return res;
+    }
+
+    void dfsPermutation33(string &s, string &p, vector<string> &res, vector<bool> &visited) {
+        if (p.size() == s.size()) {
+            res.push_back(p);
+            return;
+        }
+        for (int i = 0; i < s.size(); i++) {
+            if (visited[i]) {
+                continue;
+            }
+            visited[i] = true;
+            p.push_back(s[i]);
+            dfsPermutation33(s, p, res, visited);
+            p.pop_back();
+            visited[i] = false;
+        }
+    }
+
+
+    //面试题08.12 N皇后
+    vector<vector<string>> solveNQueens22(int n) {
+        vector<vector<string>> res;
+        vector<string> queen(n,string(n,'.'));
+        dfsQueen(res, queen, 0);
+        return res;
+    }
+
+    void dfsQueen (vector<vector<string>> &res, vector<string> &queen, int row) {
+        if (row == queen.size()) {
+            res.push_back(queen);
+            return;
+        }
+        for (int col = 0; col < queen.size(); col++) {
+            if (canQueen(queen, row, col)) {
+                queen[row][col] = 'Q';
+                dfsQueen(res, queen, row+1);
+                queen[row][col] = '.';
+            }
+        }
+    }
+
+    bool canQueen(vector<string> queen, int row, int col) {
+        //判断列
+        for (int i = 0; i < row; i++) {
+            if (queen[i][col] == 'Q') {
+                return false;
+            }
+        }
+        //判断左上
+        for (int i = row - 1, j = col - 1; i >= 0 && j >= 0; i--,j--) {
+            if (queen[i][j] == 'Q') {
+                return false;
+            }
+        }
+        //判断右上
+        for (int i = row - 1, j = col + 1; i >= 0 && j < queen.size(); i--,j++) {
+            if (queen[i][j] == 'Q') {
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     //面试题10- I. 斐波那契数列
     int fib3(int n) {
@@ -3541,6 +4436,23 @@ public:
         return res;
     }
 
+    //面试题66.构建乘积数组
+    //从左遍历一次 再从右遍历一次
+    vector<int> constructArr(vector<int>& a) {
+        vector<int> res(a.size(),1);
+        int tmp = 1;
+        for (int i = 0; i < a.size(); i++) {
+            res[i] = tmp;
+            tmp *= a[i];
+        }
+        tmp = 1;
+        for (int i = a.size()-1; i >= 0; i--) {
+            res[i] *= tmp;
+            tmp *= a[i];
+        }
+        return res;
+    }
+
     //排列字符串包含去重 再写一遍
     vector<string> permutation22(string s) {
         vector<string> res;
@@ -3657,5 +4569,174 @@ public:
         }
     }
 
-};
+    //复习堆排序
+    void heapSort(vector<int>& nums, int len) {
+        //先构建成最大堆
+        for (int i = len/2; i >= 0; i--) {
+            buildHeapArr(nums, i, len);
+        }
+        for (int i = len-1; i >= 0; i--) {
+            //每次把当前最大堆中的堆顶元素和最后一个元素交换，再对剩下的i-1个元素进行构建最大堆  这样到最后出来的就是升序
+            int tmp = nums[0];
+            nums[0] = nums[i];
+            nums[i] = tmp;
+            buildHeapArr(nums, 0, i);
+        }
+    }
 
+    void buildHeapArr(vector<int>& nums, int i, int len) {
+        int left = 2*i+1;
+        int right = 2*i+2;
+        int max = i;
+        if (left < len && nums[left] > nums[max]) {
+            max = left;
+        }
+        if (right < len && nums[right] > nums[max]) {
+            max = right;
+        }
+        if (i != max) {
+            int tmp = nums[i];
+            nums[i] = nums[max];
+            nums[max] = tmp;
+            buildHeapArr(nums, max, len);
+        }
+    }
+
+    int (^aaa)(int) = ^(int num){
+        int a = num * num;
+        return a;
+    };
+
+    void test() {
+        int b = aaa(2);
+        cout<< b;
+    }
+
+
+    bool isMatch2(string s, string p) {
+        int m = s.size();
+        int n = p.size();
+        if (m == 0 && n == 0) {
+            return true;
+        }
+        vector<vector<bool>> dp(m,vector<bool>(n,false));
+        dp[0][0] = true;
+        for (int i = 1; i <= n; i++) {
+            if (i>=2 && p[i-1] == '*' && p[i-2]) {
+                dp[0][i] = dp[0][i-2];
+            }
+        }
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (s[i-1] == p[j-1] || p[j-1] == '.') {
+                    dp[i][j] = dp[i-1][j-1];
+                } else if (p[i-1] == '*') {
+                    if (s[i-1] != p[j-2] && p[j-2] != '.') {
+                        dp[i][j] = dp[i][j-2];
+                    } else {
+                        dp[i][j] = dp[i][j-2] || dp[i][j-1] || dp[i-1][j];
+                    }
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+
+    bool isMatch3(string s, string p) {
+        int m = s.size();
+        int n = p.size();
+        if (m == 0 && n == 0) {
+            return true;
+        }
+        vector<vector<bool>> dp(m+1,vector<bool>(n+1,false));
+        dp[0][0] = true;
+        for (int i = 1; i <= n; i++) {
+            if (i >= 2 && p[i-1] == '*' && p[i-2]) {
+                dp[0][i] = dp[0][i-2];
+            }
+        }
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (s[i-1] == p[j-1] || p[j-1] == '.') {
+                    dp[i][j] = dp[i-1][j-1];
+                } else if (p[j-1] == '*') {
+                    if (p[j-2] != s[i-1] && p[j-2] != '.') {
+                        dp[i][j] = dp[i][j-2];
+                    } else {
+                        dp[i][j] = dp[i][j-1] || dp[i-1][j] || dp[i][j-2];
+                    }
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    int longestConsecutive2(vector<int> & nums) {
+        map<int, int> map;
+        int res = 0;
+        for (int i = 0; i < nums.size(); i++) {
+            if (map.find(nums[i]) == map.end()) {
+                int left = nums[i]-1;
+                int right = nums[i]+1;
+                int len1 = 0;
+                if (map.find(left) != map.end()) {
+                    len1 = map[left];
+                }
+                int len2 = 0;
+                if (map.find(right) != map.end()) {
+                    len2 = map[right];
+                }
+                int len = len1 + len2 + 1;
+                res = max(res,len);
+                map[nums[i]] = len;
+                map[nums[i]-len1] = len;
+                map[nums[i]+len2] = len;
+            }
+        }
+        return res;
+    }
+
+    //5.31周赛
+    int maxProduct(vector<int>& nums) {
+        if (nums.size() < 2) {
+            return 0;
+        }
+        int maxNum = max(nums[0],nums[1]);
+        int minNum = min(nums[0],nums[1]);
+        for (int i = 2; i < nums.size(); i++) {
+            if (nums[i] > minNum) {
+                maxNum = max(maxNum, nums[i]);
+                minNum = min(maxNum, nums[i]);
+            }
+        }
+        return (maxNum-1) * (minNum-1);
+    }
+
+    int maxArea(int h, int w, vector<int>& horizontalCuts, vector<int>& verticalCuts) {
+        sort(horizontalCuts.begin(), horizontalCuts.end());
+        sort(verticalCuts.begin(), verticalCuts.end());
+        int maxW = verticalCuts[0];
+        int maxH = horizontalCuts[0];
+        if (verticalCuts.size() == 1) {
+            maxW = max(w-verticalCuts[0],verticalCuts[0]);
+        }
+        if (horizontalCuts.size() == 1) {
+            maxH = max(h-horizontalCuts[0],horizontalCuts[0]);
+        }
+        for (int i = 1; i < horizontalCuts.size(); i++) {
+            maxH = max(maxH, horizontalCuts[i] - horizontalCuts[i-1]);
+            if (i == horizontalCuts.size() - 1) {
+                maxH = max(h - horizontalCuts[i],maxH);
+            }
+        }
+        for (int i = 1; i < verticalCuts.size(); i++) {
+            maxW = max(maxW, verticalCuts[i] - verticalCuts[i-1]);
+            if (i == verticalCuts.size() - 1) {
+                maxW = max(w - verticalCuts[i],maxW);
+            }
+        }
+        return (maxW %(10^9 + 7))* (maxH%(10^9 + 7));
+    }
+
+};
