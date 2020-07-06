@@ -43,11 +43,8 @@ int main(int argc, const char * argv[]) {
     std::cout << "Hello, World!\n";
     Solution s = Solution();
     vector<int> a;
-    a.push_back(1);
-    a.push_back(6);
-    a.push_back(3);
-    a.push_back(4);
-    a.push_back(8);
+    a.push_back(2);
+    s.missingTwo(a);
 //    s.shellSort(a,a.size());
     s.heapSort(a,a.size());
     s.verifyPostorder(a);
@@ -55,9 +52,14 @@ int main(int argc, const char * argv[]) {
     s.canPartitionKSubsets(a,3);
     s.exchange(a);
     s.permutation("abc");
-
-    s.test();
-
+    s.waysToChange(10);
+    s.findMinFibonacciNumbers(19);
+    s.maximumSwap(115);
+//    s.test();
+    vector<int> yyy = {1,10,2,9,3,8,4,7,5,6};
+    vector<int> zzzz = {4,3,1,1,3,3,2};
+    s.findLeastNumOfUniqueInts(zzzz,3);
+    s.minDays(yyy,4,2);
     vector<string> words;
     words.push_back("this");
     words.push_back("must");
@@ -66,23 +68,35 @@ int main(int argc, const char * argv[]) {
     words.push_back("offf");
     words.push_back("bu");
     s.fullJustify(words, 16);
-
+    s.recoverFromPreorder("1-2--3--4-5--6--7");
     s.simplifyPath("/../");
+
+    vector<string> names = vector<string>{"kingston(0)","kingston","kingston"};
+    s.getFolderNames(names);
+    vector<int> vods = vector<int>{1,2,0,0,2,1};
+    s.avoidFlood(vods);
+    s.isPathCrossing("NESWW");
+    vector<int> v = vector<int>{-4,-7,5,2,9,1,10,4,-8,-3};
+    s.canArrange(v,3);
+    s.findKthLargest(v,4);
 
     vector<int> aa;
     aa.push_back(1);
     aa.push_back(1);
-    aa.push_back(3);
+    aa.push_back(1);
 
     vector<int> bb;
-    bb.push_back(4);
-    bb.push_back(3);
-    bb.push_back(2);
+    bb.push_back(1);
+    bb.push_back(1);
+    bb.push_back(0);
 
     vector<int> cc;
     cc.push_back(1);
-    cc.push_back(3);
-    cc.push_back(2);
+    cc.push_back(1);
+    cc.push_back(0);
+
+    vector<vector<int>> rrr = {aa,bb,cc};
+    s.numSubmat(rrr);
 
 //    vector<int> dd;
 //    dd.push_back(0);
@@ -107,17 +121,17 @@ int main(int argc, const char * argv[]) {
 //    s.splitListToParts(nnnode,4);
 //    s.sortedListToBST(node);
     s.numDecodings("226");
-    s.generateTrees(3);
+    s.generateTrees(1);
     vector<int> aaaaa;
-    aaaaa.push_back(3);
     aaaaa.push_back(1);
-    aaaaa.push_back(0);
+    aaaaa.push_back(2);
     aaaaa.push_back(3);
+    aaaaa.push_back(4);
     aaaaa.push_back(5);
+    aaaaa.push_back(6);
+    aaaaa.push_back(7);
     aaaaa.push_back(8);
-    aaaaa.push_back(11);
-    aaaaa.push_back(13);
-    aaaaa.push_back(14);
+    s.shuffle(aaaaa,4);
 
     TreeNode *root = new TreeNode(2);
     root->left = new TreeNode(2);
@@ -131,6 +145,9 @@ int main(int argc, const char * argv[]) {
     xx->right->left = new TreeNode(2);
     xx->right->right = new TreeNode(0);
 
+    s.iterationPreOrder(xx);
+    s.iterationInOrder(xx);
+    s.iterationPostOrder(xx);
     s.pseudoPalindromicPaths(xx);
     s.recoverTree(xx);
     s.rob(aaaaa);
