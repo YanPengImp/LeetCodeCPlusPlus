@@ -487,6 +487,63 @@ public:
         return (int)nums.size();
     }
 
+    //39.组合总数
+    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
+        vector<vector<int>> res;
+        vector<int> tmp;
+        dfsCombinationSum(candidates, res, tmp, target, 0);
+        return res;
+    }
+
+    void dfsCombinationSum(vector<int>& candidates, vector<vector<int>>& res, vector<int>& tmp, int target, int index) {
+        if (target == 0) {
+            res.push_back(tmp);
+            return;
+        }
+        if (target < 0) {
+            return;
+        }
+        for (int i = index; i < candidates.size(); i++) {
+            if (candidates[i] > target) {
+                continue;
+            }
+            tmp.push_back(candidates[i]);
+            dfsCombinationSum(candidates, res, tmp, target - candidates[i], i);
+            tmp.pop_back();
+        }
+    }
+
+    //40. 组合总和 II
+    vector<vector<int>> combinationSum2(vector<int>& candidates, int target) {
+        vector<vector<int>> res;
+        vector<int> tmp;
+        sort(candidates.begin(), candidates.end());
+        dfsCombinationSum2(candidates, res, tmp, target, 0);
+        return res;
+    }
+
+    void dfsCombinationSum2(vector<int>& candidates, vector<vector<int>>& res, vector<int>& tmp, int target, int index) {
+        if (target == 0) {
+            res.push_back(tmp);
+            return;
+        }
+        if (target < 0) {
+            return;
+        }
+        for (int i = index; i < candidates.size(); i++) {
+            if (candidates[i] > target) {
+                continue;
+            }
+            //去重
+            if (i > index && candidates[i] == candidates[i-1]) {
+                continue;
+            }
+            tmp.push_back(candidates[i]);
+            dfsCombinationSum2(candidates, res, tmp, target - candidates[i], i+1);
+            tmp.pop_back();
+        }
+    }
+
     //42.接雨水
     int trap(vector<int>& height) {
         // left[i]表示i左边的最大值，right[i]表示i右边的最大值
@@ -1520,6 +1577,17 @@ public:
             return left + right + 1;
         }
         return min(left, right) + 1;
+    }
+
+    //112. 路径总和
+    bool hasPathSum(TreeNode* root, int sum) {
+        if (!root) {
+            return false;
+        }
+        if (!root->left && !root->right) {
+            return root->val == sum;
+        }
+        return hasPathSum(root->left, sum - root->val) || hasPathSum(root->right, sum - root->val);
     }
 
     //116.填充每个节点的下一个右侧节点指针
