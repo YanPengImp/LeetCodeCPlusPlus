@@ -107,6 +107,36 @@ public:
         return  res;
     }
 
+    //4. 寻找两个正序数组的中位数
+    // m+n+1)/2 m+n+2)/2找出这两个数就不用区分总个数的奇偶
+    //就相当于是两数组中寻找第k大元素，先分别在数组中寻找第k/2个数 比较，如果某一个的较小 则舍弃前半部分。
+    double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+        int m = (int)nums1.size();
+        int n = (int)nums2.size();
+        int left = (m+n+1)/2;
+        int right = (m+n+2)/2;
+        return (findKthInTwoNums(nums1, 0, nums2, 0, left) + findKthInTwoNums(nums1, 0, nums2, 0, right)) / 2.0;
+    }
+
+    int findKthInTwoNums(vector<int>& nums1, int l, vector<int>& nums2, int r, int k) {
+        if (l >= nums1.size()) {
+            return nums2[r+k-1];
+        }
+        if (r >= nums2.size()) {
+            return nums1[l+k-1];
+        }
+        if (k==1) {
+            return min(nums1[l],nums2[r]);
+        }
+        int mid1 = l + k/2 - 1 < nums1.size() ? nums1[l+k/2-1] : INT_MAX;
+        int mid2 = r + k/2 - 1 < nums2.size() ? nums2[r+k/2-1] :INT_MAX;
+        if (mid1 < mid2) {
+            return findKthInTwoNums(nums1, l + k/2, nums2, r, k-k/2);
+        } else {
+            return findKthInTwoNums(nums1, l, nums2, r+k/2, k-k/2);
+        }
+    }
+
     //5. 最长回文子串
     string longestPalindrome(string s) {
         string res = "";
@@ -635,6 +665,30 @@ public:
         }
     }
 
+    //47.全排列II
+    vector<vector<int>> permuteUnique(vector<int>& nums) {
+        vector<vector<int>> res;
+        allPermuteUnique(res, nums, 0);
+        return res;
+    }
+
+    //v传值 不传引用 swap不用交换回来
+    void allPermuteUnique(vector<vector<int>> &res, vector<int> v, int start) {
+        if (start == v.size() - 1) {
+            res.push_back(v);
+            return;
+        }
+        for (int i = start; i < v.size(); i++) {
+            if (i > start && v[i] == v[start]) {
+                continue;
+            }
+            int t = v[start];
+            v[start] = v[i];
+            v[i] = t;
+            allPermuteUnique(res, v, start+1);
+        }
+    }
+
     //48.旋转图像
     void rotate(vector<vector<int>>& matrix) {
         if (matrix.size()<2) {
@@ -786,6 +840,25 @@ public:
                 tmp = intervals[i+1];
             }
             ++i;
+        }
+        return res;
+    }
+
+    vector<vector<int>> merge2(vector<vector<int>>& intervals) {
+        int n = (int)intervals.size();
+        vector<int> starts, ends;
+        vector<vector<int>> res;
+        for (int i = 0; i < n; i++) {
+            starts.push_back(intervals[i][0]);
+            ends.push_back(intervals[i][1]);
+        }
+        sort(starts.begin(), starts.end());
+        sort(ends.begin(), ends.end());
+        for (int i = 0, j = 0; i < n; i++) {
+            if (i == n - 1 || starts[i+1] > ends[i]) {
+                res.push_back(vector<int>{starts[j], ends[i]});
+                j = i+1;
+            }
         }
         return res;
     }
@@ -1197,6 +1270,34 @@ public:
         return less->next;
     }
 
+    //87. 扰乱字符串
+    //递归法
+    bool isScramble(string s1, string s2) {
+        if (s1.size() != s2.size()) {
+            return false;
+        }
+        if (s1 == s2) {
+            return true;
+        }
+        string t1 = s1;
+        string t2 = s2;
+        sort(t1.begin(), t1.end());
+        sort(t2.begin(), t2.end());
+        if (t1 != t2) {
+            return false;
+        }
+        for (int i = 1; i < s1.size(); i++) {
+            bool flag1 = isScramble(s1.substr(0,i), s2.substr(0,i)) && isScramble(s1.substr(i,s1.size()-i), s2.substr(i,s2.size()-i));
+            bool flag2 = isScramble(s1.substr(0,i), s2.substr(s2.size()-i,i)) && isScramble(s1.substr(i,s1.size()-i), s2.substr(0,s2.size()-i));
+            if (flag1 || flag2) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
     //90.子集II
     vector<vector<int>> subsetsWithDup(vector<int>& nums) {
         vector<vector<int>> res;
@@ -1590,6 +1691,33 @@ public:
         return hasPathSum(root->left, sum - root->val) || hasPathSum(root->right, sum - root->val);
     }
 
+    //115.不同的子序列
+    /*
+     *    *  b  a  b  g  b  a  g
+     * *  1  1  1  1  1  1  1  1
+     * b  0  1  1  2  2  3  3  3
+     * a  0  0  1  1  1  1  4  4
+     * g  0  0  0  0  1  1  1  5
+     */
+    int numDistinct(string s, string t) {
+        int m = t.size();
+        int n = s.size();
+        vector<vector<long>> dp(m+1, vector<long>(n+1,0));
+        for (int i = 0; i <= n; i++) {
+            dp[0][i] = 1;
+        }
+        for (int i = 1; i <= m; i++) {
+            for (int j = 1; j <= n; j++) {
+                if (t[i-1] == s[j-1]) {
+                    dp[i][j] = dp[i-1][j] + dp[i][j-1];
+                } else {
+                    dp[i][j] = dp[i][j-1];
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
     //116.填充每个节点的下一个右侧节点指针
     Node* connect(Node* root) {
         nextNode(root);
@@ -1681,6 +1809,23 @@ public:
             res = min(res, dp[size-1][i]);
         }
         return res;
+    }
+
+    //124. 二叉树中的最大路径和
+    int sum = INT_MIN;
+    int maxPathSum(TreeNode* root) {
+        dfsMaxPathSum(root);
+        return sum;
+    }
+
+    int dfsMaxPathSum(TreeNode *root) {
+        if (!root) {
+            return 0;
+        }
+        int left = max(0, dfsMaxPathSum(root->left));
+        int right = max(0, dfsMaxPathSum(root->right));
+        sum = max(sum, root->val + left + right);
+        return max(left, right) + root->val;
     }
 
     //125.验证回文串 只考虑字母和数字 不考虑大小写
@@ -4447,7 +4592,22 @@ public:
     }
 
     //面试题16.11 跳水板
-    vector<int> divingBoard(int shorter, int longer, int k) {
+    vector<int> divingBoard(int shorter, int longer, int k){
+        vector<int> res;
+        if (k == 0) {
+            return res;
+        }
+        if (shorter == longer) {
+            return vector<int>{shorter * k};
+        }
+        for (int i = 0; i <= k; i++) {
+            int length = longer * i + (k-i) * shorter;
+            res.push_back(length);
+        }
+        return res;
+    }
+
+    vector<int> divingBoard2(int shorter, int longer, int k) {
         if (k == 0) {
             return vector<int>{0};
         }
@@ -4461,6 +4621,26 @@ public:
             res.push_back(n);
         }
         return res;
+    }
+
+    //面试题 17.13. 恢复空格
+    //dp 遍历到i位置的时候依次在dict里面找是否存在相应的string， 如果找到了 就dp[i+1] = min(dp[i+1],dp[i+1-len])
+    int respace(vector<string>& dictionary, string sentence) {
+        int n = (int)sentence.size();
+        vector<int> dp(n+1);
+        dp[0] = 0;
+        for (int i = 0; i < n; i++) {
+            dp[i+1] = dp[i]+1;
+            for (auto str: dictionary) {
+                int len = (int)str.size();
+                if (len <= i+1) {
+                    if (sentence.substr(i+1-len,len) == str) {
+                        dp[i+1] = min(dp[i+1], dp[i+1-len]);
+                    }
+                }
+            }
+        }
+        return dp[n];
     }
 
     //面试题 17.18. 最短超串

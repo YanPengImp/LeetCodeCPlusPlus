@@ -97,6 +97,7 @@ int main(int argc, const char * argv[]) {
 
     vector<vector<int>> rrr = {aa,bb,cc};
     s.numSubmat(rrr);
+    s.numDistinct("babgbg","bag");
 
 //    vector<int> dd;
 //    dd.push_back(0);
