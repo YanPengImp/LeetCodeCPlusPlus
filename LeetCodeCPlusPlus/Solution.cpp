@@ -1366,6 +1366,48 @@ public:
         return temp->next;
     }
 
+    //93. 复原IP地址
+    //leetcode编译不过 很烦。
+    vector<string> restoreIpAddresses(string s) {
+        vector<string> res;
+        string tmp;
+        dfsRestoreIpAddresses(res, s, tmp, 0);
+        return res;
+    }
+
+    //ip 每一段必为1-3位，判断这一段是否符合要求然后组成一个数字 遍历剩余的s组成3个数字。。。依次到最后组成4个数字 并且s刚好遍历完
+    void dfsRestoreIpAddresses(vector<string>& res, string s, string& tmp, int num) {
+
+        if (num >= 4) {
+            if (s.empty()) {
+                res.push_back(tmp);
+            }
+            return;
+        }
+        if (num > 0) {
+            tmp += '.';
+        }
+        for (int i = 1; i <= 3 && i <= s.size(); i++) {
+            if (validIpString(s.substr(0,i))) {
+                tmp += s.substr(0,i);
+                dfsRestoreIpAddresses(res, s.substr(i,s.size()-i), tmp, num+1);
+                tmp.erase(tmp.size()-i,i);
+            }
+        }
+        tmp.pop_back();
+    }
+
+    bool validIpString(string s) {
+        if (s.empty() || (s[0] == '0' && s.size() > 1)) {
+            return false;
+        }
+        int i = stoi(s);
+        if (i >= 0 && i <= 255) {
+            return true;
+        }
+        return false;
+    }
+
     //94.二叉树的中序遍历
     vector<int> inorderTraversal(TreeNode* root) {
         vector<int> v = vector<int>();
@@ -1811,6 +1853,15 @@ public:
         return res;
     }
 
+    int minimumTotal2(vector<vector<int>>& triangle) {
+        for (int i = triangle.size() - 2; i >= 0; i--) {
+            for (int j = 0; j <= triangle[i].size() - 1; j++) {
+                triangle[i][j] += min(triangle[i+1][j], triangle[i+1][j+1]);
+            }
+        }
+        return triangle[0][0];
+    }
+
     //124. 二叉树中的最大路径和
     int sum = INT_MIN;
     int maxPathSum(TreeNode* root) {
@@ -2129,6 +2180,99 @@ public:
         ::reverse(v.begin(),v.end());
     }
 
+    //147. 对链表进行插入排序
+    ListNode* insertionSortList(ListNode* head) {
+        ListNode *dumpHead = new ListNode(0);
+        dumpHead->next = head;
+        ListNode *pre = nullptr;
+        while (head && head->next) {
+            //这种排好的继续遍历
+            if (head->val <= head->next->val) {
+                head = head->next;
+                continue;
+            }
+            pre = dumpHead;
+            while (pre->next->val < head->next->val) {
+                pre = pre->next;
+            }
+            ListNode *cur = head->next;
+            head->next = cur->next;
+            cur->next = pre->next;
+            pre->next = cur;
+        }
+        return dumpHead->next;
+    }
+
+    //148. 排序链表
+    /*
+     bottom-to-up 的归并思路是这样的：先两个两个的 merge，完成一趟后，再 4 个4个的 merge，直到结束。举个简单的例子：[4,3,1,7,8,9,2,11,5,6].
+
+     step=1: (3->4)->(1->7)->(8->9)->(2->11)->(5->6)
+     step=2: (1->3->4->7)->(2->8->9->11)->(5->6)
+     step=4: (1->2->3->4->7->8->9->11)->(5->6)
+     step=8: (1->2->3->4->5->6->7->8->9->11)
+     链表里操作最难掌握的应该就是各种断链啊，然后再挂接啊。在这里，我们主要用到链表操作的两个技术：
+
+     merge(l1, l2)，双路归并，我相信这个操作大家已经非常熟练的，就不做介绍了。
+     cut(l, n)，可能有些同学没有听说过，它其实就是一种 split 操作，即断链操作。不过我感觉使用 cut 更准确一些，它表示，将链表 l 切掉前 n 个节点，并返回后半部分的链表头。
+     额外再补充一个 dummyHead 大法，已经讲过无数次了，仔细体会吧。
+     */
+    ListNode* sortList(ListNode* head) {
+        ListNode *dumpHead = new ListNode(0);
+        dumpHead->next = head;
+        ListNode *p = head;
+        int len = 0;
+        while (p) {
+            p = p->next;
+            len++;
+        }
+        for (int i = 1; i < len; i = i * 2) {
+            ListNode *cur = dumpHead->next;
+            ListNode *tail = dumpHead;
+            while (cur) {
+                ListNode *left = cur;
+                ListNode *right = cut(left, i);
+                cur = cut(right, i);
+                tail->next = megerNode(left, right);
+                while (tail->next) {
+                    tail = tail->next;
+                }
+            }
+        }
+        return dumpHead->next;
+    }
+
+    ListNode *cut(ListNode *node, int n) {
+        ListNode *p = node;
+        while (--n && p) {
+            p = p->next;
+        }
+        if (!p) {
+            return nullptr;
+        }
+        ListNode *next = p->next;
+        p->next = nullptr;
+        return next;
+    }
+
+    ListNode *megerNode(ListNode *l1, ListNode *l2) {
+        ListNode *dumpHead = new ListNode(0);
+        ListNode *p = dumpHead;
+        while (l1 && l2) {
+            if (l1->val < l2->val) {
+                p->next = l1;
+                p = l1;
+                l1 = l1->next;
+            } else {
+                p->next = l2;
+                p = l2;
+                l2 = l2->next;
+            }
+        }
+        p->next = l1 ? l1 : l2;
+        return dumpHead->next;
+    }
+
     //151.翻转字符串里的单词
     string reverseWords(string s) {
         vector<string> strs;
@@ -2191,6 +2335,47 @@ public:
         }
         return dp[0];
     }
+
+    int calculateMinimumHP2(vector<vector<int>>& dungeon) {
+        int m = (int)dungeon.size();
+        int n = (int)dungeon[0].size();
+        vector<vector<int>> dp(m, vector<int>(n,0));
+        for (int i = m-1; i >= 0; i--) {
+            for (int j = n-1; j >= 0; j--) {
+                if (i == m-1 && j == n-1) {
+                    dp[i][j] = max(1, 1-dungeon[i][j]);
+                } else if (i == m-1) {
+                    dp[i][j] = max(1, dp[i][j+1]-dungeon[i][j]);
+                } else if (j == n-1) {
+                    dp[i][j] = max(1, dp[i+1][j]-dungeon[i][j]);
+                } else {
+                    dp[i][j] = max(1, min(dp[i+1][j],dp[i][j+1])-dungeon[i][j]);
+                }
+            }
+        }
+        return dp[0][0];
+    }
+
+    //189.旋转数组
+    void rotate(vector<int>& nums, int k) {
+        int n = (int)nums.size();
+        k = k % n;
+        if (k == 0) {
+            return;
+        }
+        reverseArr(nums, 0, n-1);
+        reverseArr(nums, 0, k-1);
+        reverseArr(nums, k, n-1);
+    }
+
+    void reverseArr(vector<int>& nums, int l, int r) {
+        while (l < r) {
+            int temp = nums[l];
+            nums[l++] = nums[r];
+            nums[r--] = temp;
+        }
+    }
+
     //190.颠倒二进制位
     uint32_t reverseBits(uint32_t n) {
         uint32_t res = 0;
@@ -2505,6 +2690,42 @@ public:
         return root;
     }
 
+    //229. 求众数 II
+    vector<int> majorityElement2(vector<int>& nums) {
+        int a = INT_MAX, b = INT_MAX, counta = 0, countb = 0;
+        for (auto i : nums) {
+            if (i == a) {
+                counta++;
+            } else if (i == b) {
+                countb++;
+            } else if (counta == 0) {
+                a = i;
+                counta++;
+            } else if (countb == 0) {
+                countb++;
+            } else {
+                counta--;
+                countb--;
+            }
+        }
+        counta = 0, countb = 0;
+        for (auto i : nums) {
+            if (i == a) {
+                counta++;
+            } else if (i == b) {
+                countb++;
+            }
+        }
+        vector<int> res;
+        if (counta > nums.size() / 3) {
+            res.push_back(a);
+        }
+        if (countb > nums.size() / 3) {
+            res.push_back(b);
+        }
+        return res;
+    }
+
     //230. 二叉搜索树中第K小的元素
     int kthSmallest(TreeNode* root, int k) {
         int res;
@@ -2635,6 +2856,28 @@ public:
         return dp[m-1][n-1];
     }
 
+    //309. 最佳买卖股票时机含冷冻期
+    int maxProfit2(vector<int>& prices) {
+        int n = (int)prices.size();
+        if (n <= 1) {
+            return 0;
+        }
+        //分别代表截止到第i天最后一个操作是怎么样的收益 第0天只能是buy 收益是-prices[0]
+        //第i天buy收益 只能有2种情况来 上一次也是buy即buy[i-1]或者是冷冻期之后的买入  cold[i-1] - prices[i]
+        //第i天sell收益 上一次是sell即sell[i-1]或者是之前是持有 今天卖了 buy[i-1]+prices[i]
+        //第i天cold收益 只能是由上一次是sell来
+        vector<int> buy(n,0);
+        vector<int> sell(n,0);
+        vector<int> cold(n,0);
+        buy[0] = -prices[0];
+        for (int i = 1; i < n; i++) {
+            sell[i] = max(buy[i-1] + prices[i], sell[i-1]);
+            buy[i] = max(buy[i-1], cold[i-1] - prices[i]);
+            cold[i] = sell[i-1];
+        }
+        return sell[n-1];
+    }
+
     //319.灯泡开关
     int bulbSwitch(int n) {
         int res = 0;
@@ -2702,6 +2945,22 @@ public:
         return head;
     }
 
+    //350. 两个数组的交集 II
+    vector<int> intersect(vector<int>& nums1, vector<int>& nums2) {
+        vector<int> res;
+        unordered_map<int, int> map;
+        for (auto i : nums1) {
+            map[i]++;
+        }
+        for (auto i : nums2) {
+            if (map[i] > 0) {
+                res.push_back(i);
+                map[i]--;
+            }
+        }
+        return res;
+    }
+
     //378. 有序矩阵中第K小的元素
     int kthSmallest(vector<vector<int>>& matrix, int k) {
         int n = matrix.size() - 1;
@@ -2763,6 +3022,60 @@ public:
             }
         }
         return s1 == m;
+    }
+
+    //445. 两数相加 II
+    //第2题两数相加是从头到尾 这个是从尾到头 所以用两个栈解决
+    ListNode* addTwoNumbers2(ListNode* l1, ListNode* l2) {
+        stack<int> s1;
+        stack<int> s2;
+        while (l1) {
+            s1.push(l1->val);
+            l1 = l1->next;
+        }
+        while (l2) {
+            s2.push(l2->val);
+            l2 = l2->next;
+        }
+        int flag = 0;
+        ListNode *head = nullptr;
+        //注意进位大于0的时候也是需要的 比如两个链表都只有一个节点5 最后结果为1->0
+        while (!s1.empty() || !s2.empty() || flag > 0) {
+            int sum = flag;
+            if (!s1.empty()) {
+                sum += s1.top();
+                s1.pop();
+            }
+            if (!s2.empty()) {
+                sum += s2.top();
+                s2.pop();
+            }
+            flag = sum / 10;
+            ListNode *node = new ListNode(sum % 10);
+            node->next = head;
+            head = node;
+        }
+        return head;
+    }
+
+    //456.132模式 i < j < k 的时候 ai < ak < aj
+    bool find132pattern(vector<int>& nums) {
+        if (nums.size() < 3) {
+            return false;
+        }
+        stack<int> stack;
+        int last = INT_MIN; //第二大的值
+        for (int i = (int)nums.size() - 1; i >= 0; i--) {
+            if (nums[i] < last) {
+                return true;
+            }
+            while (!stack.empty() && nums[i] > stack.top()) {
+                last = stack.top();
+                stack.pop();
+            }
+            stack.push(nums[i]);
+        }
+        return false;
     }
 
     //464.我能赢吗
@@ -2856,6 +3169,27 @@ public:
             }
         }
         return ret;
+    }
+
+    //503. 下一个更大元素 II
+    /*
+     遍历两次数组，把索引依次入栈，当后面遇到的num比当前栈顶的索引位置元素大的时候 就给res的索引位置元素赋值
+     */
+    vector<int> nextGreaterElements(vector<int>& nums) {
+        int n = (int)nums.size();
+        vector<int> res(n,-1);
+        stack<int> stack;
+        for (int i = 0; i < 2*n; i++) {
+            int num = nums[i % n];
+            while (!stack.empty() && num > nums[stack.top()]) {
+                res[stack.top()] = num;
+                stack.pop();
+            }
+            if (i < n) {
+                stack.push(i);
+            }
+        }
+        return res;
     }
 
     //504.七进制数
@@ -3188,6 +3522,27 @@ public:
         return true;
     }
 
+    //695. 岛屿的最大面积
+    int maxAreaOfIsland(vector<vector<int>>& grid) {
+        int count = 0;
+        for (int i = 0; i < grid.size(); i++) {
+            for (int j = 0; j < grid[0].size(); j++) {
+                if (grid[i][j] == 1) {
+                    count = max(count, dfsMaxAreaOfIsland(grid, i, j));
+                }
+            }
+        }
+        return count;
+    }
+
+    int dfsMaxAreaOfIsland(vector<vector<int>>& grid, int row, int col) {
+        if (row < 0 || row >= grid.size() || col < 0 || col >= grid[0].size() || grid[row][col] == 0) {
+            return 0;
+        }
+        grid[row][col] = 0;
+        return 1 + dfsMaxAreaOfIsland(grid, row, col + 1) + dfsMaxAreaOfIsland(grid, row, col - 1) + dfsMaxAreaOfIsland(grid, row + 1, col) + dfsMaxAreaOfIsland(grid, row - 1, col);
+    }
+
     //698.划分为k个相等的子集
     bool canPartitionKSubsets(vector<int>& nums, int k) {
         int sum = 0;
@@ -3290,6 +3645,43 @@ public:
             }
             cur->next = NULL;
             res.push_back(newH->next);
+        }
+        return res;
+    }
+
+    //735. 行星碰撞
+    /*
+     给定一个整数数组 asteroids，表示在同一行的行星。
+
+     对于数组中的每一个元素，其绝对值表示行星的大小，正负表示行星的移动方向（正表示向右移动，负表示向左移动）。每一颗行星以相同的速度移动。
+
+     找出碰撞后剩下的所有行星。碰撞规则：两个行星相互碰撞，较小的行星会爆炸。如果两颗行星大小相同，则两颗行星都会爆炸。两颗移动方向相同的行星，永远不会发生碰撞。
+     */
+    //res保存保留的 如果最后一个是>0并且遇到小于0的 需要判断 然后是否进行pop 是否将小于0的push到res
+    vector<int> asteroidCollision(vector<int>& asteroids) {
+        vector<int> res;
+        for (int i = 0; i < asteroids.size(); i++) {
+            if (asteroids[i] > 0) {
+                res.push_back(asteroids[i]);
+            } else {
+                bool flag = true;
+                while (!res.empty() && res.back() > 0) {
+                    if (abs(asteroids[i]) > res.back()) {
+                        res.pop_back();
+                        flag = true;
+                    } else if (abs(asteroids[i]) == res.back()) {
+                        res.pop_back();
+                        flag = false;
+                        break;
+                    } else {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (flag) {
+                    res.push_back(asteroids[i]);
+                }
+            }
         }
         return res;
     }
@@ -3533,6 +3925,27 @@ public:
         for (int i = 1; i < A.size(); i++) {
             res = max(res, A[i]-i+left);
             left = max(left,A[i]+i);
+        }
+        return res;
+    }
+
+    //1019. 链表中的下一个更大节点
+    vector<int> nextLargerNodes(ListNode* head) {
+        vector<int> nums;
+        while (head) {
+            nums.push_back(head->val);
+            head = head->next;
+        }
+        int n = (int)nums.size();
+        vector<int> res(n,0);
+        stack<int> stack;
+        for (int i = 0; i < n; i++) {
+            int num = nums[i];
+            while (!stack.empty() && num > nums[stack.top()]) {
+                res[stack.top()] = num;
+                stack.pop();
+            }
+            stack.push(i);
         }
         return res;
     }
@@ -4080,6 +4493,36 @@ public:
         return less->next;
     }
 
+    //面试题 02.06. 回文链表
+    bool isPalindrome2(ListNode* head) {
+        ListNode *slow = head;
+        ListNode *fast = head;
+        while (fast && fast->next) {
+            slow = slow->next;
+            fast = fast->next->next;
+        }
+        slow = reverseListNode(slow);
+        while (head && slow) {
+            if (head->val != slow->val) {
+                return false;
+            }
+            head = head->next;
+            slow = slow->next;
+        }
+        return true;
+    }
+
+    ListNode *reverseListNode(ListNode *node) {
+        ListNode *newH = nullptr;
+        for (ListNode *p = node; p; ) {
+            ListNode *tmp = p->next;
+            p->next = newH;
+            newH = p;
+            p = tmp;
+        }
+        return newH;
+    }
+
     //面试题02.07 链表相交
     ListNode *getIntersectionNode2(ListNode *headA, ListNode *headB) {
         ListNode *A = headA;
@@ -4496,6 +4939,30 @@ public:
                 }
             }
         }
+    }
+
+    //面试题 10.09. 排序矩阵查找
+    bool searchMatrix2(vector<vector<int>>& matrix, int target) {
+        if (matrix.size() == 0 || matrix[0].size() == 0) {
+            return false;
+        }
+        int m = (int)matrix.size();
+        int n = (int)matrix[0].size();
+        if (matrix[0][0] > target || matrix[m-1][n-1] < target) {
+            return false;
+        }
+        int row = m-1;
+        int col = 0;
+        while (row >= 0 && col <= n-1) {
+            if (matrix[row][col] == target) {
+                return true;
+            } else if (matrix[row][col] > target) {
+                row--;
+            } else {
+                col++;
+            }
+        }
+        return false;
     }
 
     //面试题11. 旋转数组的最小数字
@@ -6203,6 +6670,88 @@ public:
             }
         }
         return ans;
+    }
+
+    //7.12周赛
+    /*
+    给你一个整数数组 nums 。
+
+    如果一组数字 (i,j) 满足 nums[i] == nums[j] 且 i < j ，就可以认为这是一组 好数对 。
+
+    返回好数对的数目。
+     */
+    int numIdenticalPairs(vector<int>& nums) {
+        int res = 0;
+        for (int i = 0; i < nums.size() - 1; i++) {
+            for (int j = i + 1; j < nums.size(); j++) {
+                if (nums[i] == nums[j]) {
+                    res += 1;
+                }
+            }
+        }
+        return res;
+    }
+
+    /*
+     给你一个二进制字符串 s（仅由 '0' 和 '1' 组成的字符串）。
+
+     返回所有字符都为 1 的子字符串的数目。
+
+     由于答案可能很大，请你将它对 10^9 + 7 取模后返回。
+     */
+    int numSub(string s) {
+        long left = 0;
+        long right = 0;
+        int res = 0;
+        while (right < s.size()) {
+            if (s[right] == '0') {
+                left++;
+                right++;
+            } else {
+                while (s[right] == '1') {
+                    right++;
+                }
+                res += (right - left) * (right - left + 1) / 2 % 1000000007;
+                left = right;
+            }
+        }
+        return res;
+    }
+
+    /*
+     给你一个由 n 个节点（下标从 0 开始）组成的无向加权图，该图由一个描述边的列表组成，其中 edges[i] = [a, b] 表示连接节点 a 和 b 的一条无向边，且该边遍历成功的概率为 succProb[i] 。
+
+     指定两个节点分别作为起点 start 和终点 end ，请你找出从起点到终点成功概率最大的路径，并返回其成功概率。
+
+     如果不存在从 start 到 end 的路径，请 返回 0 。只要答案与标准答案的误差不超过 1e-5 ，就会被视作正确答案。
+     */
+
+    double maxProbability(int n, vector<vector<int>>& edges, vector<double>& succProb, int start, int end) {
+        vector<vector<pair<double,int>>> graph (n,vector<pair<double,int>>());
+        for (int i = 0; i < edges.size(); ++i) {
+            auto e = edges[i];
+            graph[e[0]].push_back({succProb[i],e[1]});
+            graph[e[1]].push_back({succProb[i],e[0]});
+        }
+        vector<int> visited(n,0);
+        priority_queue<pair<double,int>> q;
+        q.push({1,start});
+        while(!q.empty()) {
+            auto p = q.top();
+            q.pop();
+            auto curProb = p.first;
+            auto curPos = p.second;
+            if (visited[curPos]) continue;
+            visited[curPos] = 1;
+            if (curPos == end) return curProb;
+            for ( auto next : graph[curPos]){
+                double nextProb = next.first;
+                int nextPos = next.second;
+                if (visited[nextPos]) continue;
+                q.push({curProb*nextProb,nextPos});
+            }
+        }
+        return 0;
     }
 
 };

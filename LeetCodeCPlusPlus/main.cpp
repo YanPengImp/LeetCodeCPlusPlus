@@ -98,6 +98,12 @@ int main(int argc, const char * argv[]) {
     vector<vector<int>> rrr = {aa,bb,cc};
     s.numSubmat(rrr);
     s.numDistinct("babgbg","bag");
+    s.restoreIpAddresses("25525511213");
+    s.numSub("01100111");
+
+    vector<vector<int>> edges{vector<int>{2,3},vector<int>{1,2},vector<int>{3,4},vector<int>{1,3},vector<int>{1,4},vector<int>{0,1},vector<int>{2,4},vector<int>{0,4},vector<int>{0,2}};
+    vector<double> pro{0.05,0.26,0.49,0.25,0.2,0.64,0.23,0.21,0.77};
+    s.maxProbability(5,edges,pro,0,3);
 
 //    vector<int> dd;
 //    dd.push_back(0);
