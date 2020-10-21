@@ -47,8 +47,46 @@ struct Node {
   Node *next;
 };
 
+struct Trie {
+    unordered_map<char, Trie *> childs;
+    priority_queue<string> words;
+};
+
+struct Bucket {
+    int min;
+    int max;
+    bool used;
+};
+
 class Solution {
 public:
+
+    string compressString2(string str) {
+        if (str.size() <= 1) {
+            return str;
+        }
+        string res;
+        char pre = str[0];
+        int count = 1;
+        for (int i = 1; i < str.size(); i++) {
+            char c = str[i];
+            if (pre == c) {
+                count++;
+            } else {
+                res += pre;
+                if (count > 1) {
+                    res += to_string(count);
+                }
+                pre = c;
+                count = 1;
+            }
+        }
+        res += pre;
+        if (count > 1) {
+            res += to_string(count);
+        }
+        return res;
+    }
 
     //2.两数相加
     /*
@@ -517,6 +555,22 @@ public:
         return (int)nums.size();
     }
 
+    int searchInsert2(vector<int>& nums, int target) {
+        int left = 0;
+        int right = nums.size();
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (nums[mid] == target) {
+                return mid;
+            } else if (nums[mid] > target) {
+                right = mid;
+            } else {
+                left = mid + 1;
+            }
+        }
+        return right;
+    }
+
     //39.组合总数
     vector<vector<int>> combinationSum(vector<int>& candidates, int target) {
         vector<vector<int>> res;
@@ -939,6 +993,27 @@ public:
         }
         dfsUniquePathsWithObstacles(obstacleGrid, row + 1, col, count);
         dfsUniquePathsWithObstacles(obstacleGrid, row, col + 1, count);
+    }
+
+    //64.最小路径和
+    int minPathSum(vector<vector<int>>& grid) {
+        int m = (int)grid.size();
+        int n = (int)grid[0].size();
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == 0 && j == 0) {
+                    continue;
+                }
+                if (i == 0) {
+                    grid[i][j] += grid[i][j-1];
+                } else if (j == 0) {
+                    grid[i][j] += grid[i-1][j];
+                } else {
+                    grid[i][j] += min(grid[i-1][j], grid[i][j-1]);
+                }
+            }
+        }
+        return grid[m-1][n-1];
     }
 
     //67.二进制求和
@@ -1423,6 +1498,25 @@ public:
         v.push_back(node->val);
         inorderRecursionTraversal(v, node->right);
     }
+
+    vector<int> inorderTraversal2(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode *> stack;
+        auto node = root;
+        while (!stack.empty()) {
+            while (node != NULL) {
+                stack.push(node);
+                node = node->left;
+            }
+            node = stack.top();
+            stack.pop();
+            res.push_back(node->val);
+            node = node->right;
+        }
+        return res;
+    }
+
+
     //非递归
     void inorderNoRecursionTraversal(vector<int> &v, TreeNode *node) {
         stack<TreeNode *> s;
@@ -2035,6 +2129,45 @@ public:
         }
     }
 
+    //130.被围绕的区域
+    //先从边界的O开始dfs对遍历到的O改变为*
+    //然后遍历把所有的O改为X 所有的*改为O
+    void solve(vector<vector<char>>& board) {
+        int m = (int)board.size();
+        int n = (int)board[0].size();
+        for (int i = 0; i < m; i++) {
+            dfsSolve(board, i, 0);
+            dfsSolve(board, i, n-1);
+        }
+        for (int i = 0; i < n; i++) {
+            dfsSolve(board, 0, i);
+            dfsSolve(board, m-1, i);
+        }
+        for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+                if (board[i][j] == 'O') {
+                    board[i][j] = 'X';
+                }
+                if (board[i][j] == '*') {
+                    board[i][j] = 'O';
+                }
+            }
+        }
+    }
+
+    void dfsSolve(vector<vector<char>>& board, int row, int col) {
+        if (row < 0 || row >= board.size() || col < 0 || col >= board[0].size()) {
+            return;
+        }
+        if (board[row][col] == 'O') {
+            board[row][col] = '*';
+            dfsSolve(board, row, col+1);
+            dfsSolve(board, row, col-1);
+            dfsSolve(board, row+1, col);
+            dfsSolve(board, row-1, col);
+        }
+    }
+
     //137.只出现一次的数字||
     int singleNumber(vector<int>& nums) {
         int a = 0, b = 0;
@@ -2306,6 +2439,21 @@ public:
         return res;
     }
 
+    //153. 寻找旋转排序数组中的最小值
+    int findMin(vector<int>& nums) {
+        int left = 0;
+        int right = (int)nums.size() - 1;
+        while (left < right) {
+            int mid = left + (right - left)/2;
+            if (nums[mid] > nums[right]) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return nums[left];
+    }
+
     //160.相交链表
     //a+c+b = b+c+a长度
     ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
@@ -2319,6 +2467,55 @@ public:
             pB = pB == nullptr ? headA : pB->next;
         }
         return pA;
+    }
+
+    //164. 最大间距
+    int maximumGap(vector<int>& nums) {
+        if(nums.size() < 2) {
+            return 0;
+        }
+        int minN = nums[0];
+        int maxN = nums[0];
+        for (int i = 1; i < nums.size(); i++) {
+            minN = min(minN, nums[i]);
+            maxN = max(maxN, nums[i]);
+        }
+        int bucketSize = max(1,(maxN - minN)/((int)nums.size() - 1));
+        int bucketCount = (maxN - minN) / bucketSize + 1;
+        vector<Bucket> buckets(bucketCount, Bucket());
+        for (int n: nums) {
+            int index = (n - minN) / bucketSize;
+            buckets[index].used = true;
+            buckets[index].min = min(buckets[index].min, n);
+            buckets[index].max = max(buckets[index].max, n);
+        }
+        int pre = minN;
+        int res = 0;
+        for (int i = 0; i < bucketCount; i++) {
+            if (!buckets[i].used) {
+                continue;
+            }
+            res = max(res, buckets[i].min - pre);
+            pre = buckets[i].max;
+        }
+        return res;
+    }
+
+
+    //167. 两数之和 II - 输入有序数组
+    vector<int> twoSum2(vector<int>& numbers, int target) {
+        int left = 0;
+        int right = numbers.size()-1;
+        while (left < right) {
+            if (numbers[left] + numbers[right] == target) {
+                break;
+            } else if (numbers[left] + numbers[right] < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+        return vector<int>{left+1,right+1};
     }
 
     //174.地下城游戏
@@ -2622,6 +2819,55 @@ public:
         return l;
     }
 
+    //216. 组合总和 III
+    vector<vector<int>> combinationSum3(int k, int n) {
+        vector<vector<int>> res;
+        vector<int> tmp;
+        vector<bool> visited(9, false);
+        dfsCombinationSum3(res, visited,tmp, n, k, 1);
+        return res;
+    }
+
+    void dfsCombinationSum3(vector<vector<int>> &res, vector<bool> &visited,vector<int> &tmp, int target, int k, int index) {
+        if (tmp.size() == k && target == 0) {
+            res.push_back(tmp);
+            return;
+        }
+        if (tmp.size() > k || target < 0) {
+            return;
+        }
+        for (int i = index; i <= 9; i++) {
+            if (visited[i-1]) {
+                continue;
+            }
+            if (target < i) {
+                break;
+            }
+            visited[i-1] = true;
+            tmp.push_back(i);
+            dfsCombinationSum3(res, visited,tmp, target - i, k, i);
+            tmp.pop_back();
+            visited[i-1] = false;
+        }
+    }
+
+    //219. 存在重复元素 II
+    bool containsNearbyDuplicate(vector<int>& nums, int k) {
+        unordered_map<int, int> map;
+        for (int i = 0; i < (int)nums.size(); i++) {
+            if (map.count(nums[i])) {
+                if (abs(i-map[nums[i]]) <= k) {
+                    return true;
+                } else {
+                    map[nums[i]] = i;
+                }
+            } else {
+                map[nums[i]] = i;
+            }
+        }
+        return false;
+    }
+
     //221. 最大正方形
     int maximalSquare(vector<vector<char>>& matrix) {
         int res = 0;
@@ -2785,6 +3031,28 @@ public:
             A[i] *= B[i];
         }
         return A;
+    }
+
+    //240. 搜索二维矩阵 II
+    bool searchMatrix3(vector<vector<int>>& matrix, int target) {
+        if (matrix.size() == 0) {
+            return false;
+        }
+        if (matrix[0].size() == 0) {
+            return false;
+        }
+        int row = matrix.size()-1;
+        int col = 0;
+        while (row >= 0 && col < matrix[0].size()) {
+            if (matrix[row][col] == target) {
+                return true;
+            } else if (matrix[row][col] < target) {
+                col++;
+            } else {
+                row--;
+            }
+        }
+        return false;
     }
 
     //289.生命游戏
@@ -3024,6 +3292,29 @@ public:
         return s1 == m;
     }
 
+    //396. 旋转函数
+    /*
+     A = [4,3,2,6]
+     0*4 + 1*3 + 2*2 + 3*6 = F(0)
+     3*4 + 0*3 + 1*2 + 2*6 = F(1) = F(0) - sum + N*A[0]
+     2*4 + 3*3 + 0*2 + 1*6 = F(2) = F(1) - sum + N*A[1]
+
+     */
+    int maxRotateFunction(vector<int>& A) {
+        int sum = 0;
+        int F = 0;
+        for (int i = 0;i < A.size();i++) {
+            sum += A[i];
+            F += i * A[i];
+        }
+        int res = F;
+        for (int i = 1; i < A.size(); i++) {
+            F = F - sum + A.size() * A[i-1];
+            res = max(res, F);
+        }
+        return res;
+    }
+
     //445. 两数相加 II
     //第2题两数相加是从头到尾 这个是从尾到头 所以用两个栈解决
     ListNode* addTwoNumbers2(ListNode* l1, ListNode* l2) {
@@ -3078,6 +3369,47 @@ public:
         return false;
     }
 
+    //457.环形循环数组
+    bool circularArrayLoop(vector<int>& nums) {
+        int N=(int)nums.size();
+        vector<int> vis(N, 0);
+        int round=0;
+        bool dir=true; //true为正向，false为反向
+        for(int i=0;i<nums.size();i++)
+        {
+            if(vis[i]==0)
+            {
+                round++;
+                vis[i]=round;
+                int temp=i;
+                dir=nums[temp]>0?true:false;
+                int next=(temp+N+nums[temp]%N)%N;
+                if(next==temp||(dir!=(nums[next]>0?true:false)))
+                {
+                    continue;
+                }
+                while(vis[next]==0)
+                {
+                    //cout<<temp<<" "<<next<<endl;
+                    if(next==temp||(dir!=(nums[next]>0?true:false)))
+                    {
+                        break;
+                    }
+
+                    temp=next;
+                    vis[next]=round;
+                    next=(temp+nums[temp]%N+N)%N;
+
+                }
+                if(next!=temp&&vis[next]==round)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     //464.我能赢吗
     bool canIWin(int maxChoosableInteger, int desiredTotal) {
         if (maxChoosableInteger >= desiredTotal) {
@@ -3124,6 +3456,28 @@ public:
                 }
             }
             return dp[0][n-1] >= 0;
+        }
+    }
+
+    //491.递增子序列
+    vector<vector<int>> findSubsequences(vector<int>& nums) {
+        set<vector<int>> res;
+        vector<int> tmp;
+        dfsFindSubsequences(nums, res, tmp, 0);
+        return vector<vector<int>>(res.begin(), res.end());
+    }
+
+    void dfsFindSubsequences(vector<int>& nums, set<vector<int>>& res, vector<int>& tmp, int index) {
+        if (tmp.size() >= 2) {
+            res.insert(tmp);
+        }
+        for (int i = index; i < nums.size(); i++) {
+            if (!tmp.empty() && tmp.back() > nums[i]) {
+                continue;
+            }
+            tmp.push_back(nums[i]);
+            dfsFindSubsequences(nums, res, tmp, i+1);
+            tmp.pop_back();
         }
     }
 
@@ -3258,6 +3612,15 @@ public:
         return true;
     }
 
+    //521. 最长特殊序列 Ⅰ
+    int findLUSlength(string a, string b) {
+        if (a == b) {
+            return -1;
+        } else {
+            return max(a.size(),b.size());
+        }
+    }
+
     //523. 连续的的子数组和
     //leetcode测试用例傻逼至极！！！！！！！
     bool checkSubarraySum(vector<int>& nums, int k) {
@@ -3278,6 +3641,19 @@ public:
             }
         }
         return false;
+    }
+
+    //538.把二叉搜索树转换为累加树
+    int rootNum = 0;
+    TreeNode* convertBST(TreeNode* root) {
+        if (!root) {
+            return nullptr;
+        }
+        convertBST(root->right);
+        root->val = root->val + rootNum;
+        rootNum = root->val;
+        convertBST(root->left);
+        return root;
     }
 
     //541.反转字符串二
@@ -3427,6 +3803,21 @@ public:
             v.push_back(avg);
         }
         return v;
+    }
+
+    //658. 找到 K 个最接近的元素
+    vector<int> findClosestElements(vector<int>& arr, int k, int x) {
+        int left = 0;
+        int right = (int)arr.size() - k;
+        while (left < right) {
+            int mid = left + (right - left)/2;
+            if (x - arr[mid] > arr[mid + k] - x) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        return vector<int>(arr.begin()+left,arr.begin()+left+k);
     }
 
     //669.修剪二叉搜索树
@@ -3726,6 +4117,162 @@ public:
         return dp[maxNum];
     }
 
+    //743. 网络延迟时间
+    int networkDelayTime(vector<vector<int>>& times, int N, int K) {
+        vector<vector<long long>> graph(N + 1,vector<long long>(N+1,INT_MAX));
+        for (int i = 0; i <= N; i++) {
+            graph[i][i] = 0;
+        }
+        for (int i = 0 ; i< times.size(); i++) {
+            vector<int> v = times[i];
+            graph[v[0]][v[1]] = v[2];
+        }
+        vector<int> disToK(N+1,INT_MAX);
+        queue<int> q;
+        q.push(K);disToK[K]=0;
+        while(!q.empty()){
+            int front=q.front();    q.pop();
+            for(int target=1;target<=N;++target){//尝试对所有的点进行relax
+                if(disToK[front]+graph[front][target]<disToK[target]){
+                    disToK[target]=disToK[front]+graph[front][target];
+                    q.push(target);
+                }
+            }
+        }
+
+        int ans=0;
+        for(int i=1;i<=N;i++){
+            if(disToK[i]==INT_MAX) return -1;
+            ans=max(ans,disToK[i]);
+        }
+        return ans;
+    }
+
+    //765. 情侣牵手
+    int minSwapsCouples(vector<int>& row) {
+        int res = 0;
+        for (int i = 0; i < row.size(); i += 2) {
+            int boy = row[i];
+            int girl = (boy % 2 == 0) ? boy + 1 : boy - 1;
+            if (row[i+1] != girl) {
+                for (int j = i + 2; j < row.size(); j++) {
+                    if (row[j] == girl) {
+                        swap(row[j], row[i+1]);
+                        res++;
+                    }
+                }
+            }
+        }
+        return res;
+    }
+
+    //773.滑动谜题
+    int slidingPuzzle(vector<vector<int>>& board) {
+        string start;
+        for (int i = 0; i < board.size(); i++) {
+            for (int j = 0; j < board[0].size(); j++) {
+                start += to_string(board[i][j]);
+            }
+        }
+        return bfsSlidingPuzzle(start);
+    }
+
+    int bfsSlidingPuzzle(string start) {
+        vector<vector<int>> dx = {{1,3},{0,2,4},{1,5},{0,4},{1,3,5},{2,4}};
+        queue<string> queue;
+        queue.push(start);
+        int step = 0;
+        string target = "123450";
+        unordered_set<string> visited;
+        visited.insert(start);
+        while (!queue.empty()) {
+            int size = (int)queue.size();
+            while (size--) {
+                auto s = queue.front();
+                queue.pop();
+                if (s == target) {
+                    return step;
+                }
+                int index = 0;
+                while (s[index] != '0') {
+                    index++;
+                }
+                vector<int> pos = dx[index];
+                for (int i = 0; i < pos.size(); i++) {
+                    string newS = s;
+                    swap(newS[index], newS[pos[i]]);
+                    if (visited.count(newS)) {
+                        continue;
+                    }
+                    queue.push(newS);
+                    visited.insert(newS);
+                }
+            }
+            step++;
+        }
+        return -1;
+    }
+
+    //785. 判断二分图
+    bool isBipartite(vector<vector<int>>& graph) {
+        int n = (int)graph.size();
+        vector<int> v(n,-1);
+        //需要遍历所有的节点
+        for (int i = 0; i < n; i++) {
+            if (v[i] == -1 && !dfsIsBipartite(v, graph, i, 0)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool dfsIsBipartite(vector<int>& v, vector<vector<int>>& graph, int i, int c) {
+        //已经染色了
+        if (v[i] != -1) {
+            return v[i] == c;
+        }
+        //未染色
+        v[i] = c;
+        for (auto node : graph[i]) {
+            //相邻节点染色
+            if (!dfsIsBipartite(v, graph, node, !c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //802. 找到最终的安全状态
+    //TODO
+    vector<int> eventualSafeNodes(vector<vector<int>>& graph) {
+        int N = graph.size();
+        vector<bool> visited(N, false);
+        vector<int> status(N, 0);
+        for (int i = 0; i < N; ++i) {
+            dfsEventualSafeNodes(graph, visited, i, status);
+        }
+        vector<int> res;
+        for (int i = 0; i < N; ++i) {
+            if (status[i] == 1) res.push_back(i);
+        }
+        return res;
+    }
+
+    void dfsEventualSafeNodes(const vector<vector<int> >& graph, vector<bool>& visited, int i, vector<int>& status) {
+        if (status[i] != 0) return;
+        status[i] = -1;
+        for (auto j : graph[i]) {
+            // has loop
+            if (visited[j]) return;
+            visited[j] = true;
+            dfsEventualSafeNodes(graph, visited, j, status);
+            visited[j] = false;
+            // hit invalid neighor nodes
+            if (status[j] == -1) return;
+        }
+        // is a safe node
+        status[i] = 1;
+    }
     //817.链表组件
     int numComponents(ListNode* head, vector<int>& G) {
         unordered_set<int> set(G.begin(),G.end());
@@ -3762,6 +4309,52 @@ public:
             dp[i] = dp[i + 1] - (dp[i + W + 1] - dp[i + 1]) / W;
         }
         return dp[0];
+    }
+
+    //841. 钥匙和房间
+    bool canVisitAllRooms(vector<vector<int>>& rooms) {
+        vector<bool> visited(rooms.size(),false);
+        queue<int> queue;
+        queue.push(0);
+        while (!queue.empty()) {
+            int room = queue.front();
+            visited[room] = true;
+            for (int i = 0; i < rooms[room].size(); i++) {
+                int key = rooms[room][i];
+                if (visited[key] == false) {
+                    queue.push(key);
+                }
+            }
+            queue.pop();
+
+        }
+        for (int i = 0; i < visited.size(); i++) {
+            if (visited[i] == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    //844.比较含退格的字符串
+    bool backspaceCompare(string S, string T) {
+        stack<char> ss;
+        stack<char> st;
+        for (auto c : S) {
+            if (c != '#') {
+                ss.push(c);
+            } else if (c == '#' && !ss.empty()) {
+                ss.pop();
+            }
+        }
+        for (auto c : T) {
+            if (c != '#') {
+                st.push(c);
+            } else if (c == '#' && !st.empty()) {
+                st.pop();
+            }
+        }
+        return ss == st;
     }
 
     //876.删除链表中间节点
@@ -3859,6 +4452,35 @@ public:
         return gcd(b, a%b);
     }
 
+    //921. 使括号有效的最少添加
+    int minAddToMakeValid(string S) {
+        stack<char> stack;
+        for (auto c : S) {
+            if (!stack.empty() && stack.top() == '(' && c == ')') {
+                stack.pop();
+            } else {
+                stack.push(c);
+            }
+        }
+        return stack.size();
+    }
+
+    //922. 按奇偶排序数组 II
+    vector<int> sortArrayByParityII(vector<int>& A) {
+        int j = 1;
+        for (int i = 0; i < A.size() - 1; i += 2) {
+            if ((A[i] & 1) != 0) {
+                while ((A[j] & 1) != 0) {
+                    j += 2;
+                }
+                int tmp = A[i];
+                A[i] = A[j];
+                A[j] = tmp;
+            }
+        }
+        return  A;
+    }
+
     //974.和可被K整除的子数组
     int subarraysDivByK(vector<int>& A, int K) {
         unordered_map<int, int> map{{0,1}};
@@ -3911,6 +4533,48 @@ public:
         int right = coins(node->right, val);
         val += abs(left) + abs(right);
         return left + right + node->val - 1;
+    }
+
+    //997. 找到小镇的法官
+    /*
+     在一个小镇里，按从 1 到 N 标记了 N 个人。传言称，这些人中有一个是小镇上的秘密法官。
+
+     如果小镇的法官真的存在，那么：
+
+     小镇的法官不相信任何人。
+     每个人（除了小镇法官外）都信任小镇的法官。
+     只有一个人同时满足属性 1 和属性 2 。
+     给定数组 trust，该数组由信任对 trust[i] = [a, b] 组成，表示标记为 a 的人信任标记为 b 的人。
+     如果小镇存在秘密法官并且可以确定他的身份，请返回该法官的标记。否则，返回 -1。
+     */
+    //找到入度是N-1 出度是0的
+    int findJudge(int N, vector<vector<int>>& trust) {
+        vector<int> ind(N+1);
+        vector<int> outd(N+1);
+        for (auto v : trust) {
+            ind[v[1]]++;
+            outd[v[0]]++;
+        }
+        for (int i = 1; i <= N; i++) {
+            if (outd[i] == 0 && ind[i] == N - 1) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
+    //1009. 十进制整数的反码
+    int bitwiseComplement(int N) {
+        int res = 0;
+        int c = 1;
+        while (N) {
+            if (N % 2 == 0) {
+                res += c;
+            }
+            c *= 2;
+        }
+        return res;
     }
 
     //1014 最佳观光组合
@@ -4036,6 +4700,32 @@ public:
         return vector<int>{2,c-a-2};
     }
 
+    //1043. 分隔数组以得到最大和
+    int maxSumAfterPartitioning(vector<int>& A, int K) {
+        vector<int> dp(A.size(),0);
+        for (int i = 0; i < A.size(); i++) {
+            int maxN = A[i];
+            for (int j = 1; j <= K && i-j+1>=0; j++) {
+                maxN = max(maxN, A[i-j+1]);
+                dp[i] = max(dp[i], i-j<0 ? 0 : A[i-j] + (i-j)* maxN);
+            }
+        }
+        return dp[A.size()-1];
+    }
+
+    //1047. 删除字符串中的所有相邻重复项
+    string removeDuplicates(string S) {
+        string res;
+        for (auto c: S) {
+            if (res.empty() || res.back() != c) {
+                res.push_back(c);
+            } else {
+                res.pop_back();
+            }
+        }
+        return res;
+    }
+
     //1137.第n个斐波那契数
     int tribonacci(int n) {
         if (n == 0) {
@@ -4072,6 +4762,39 @@ public:
         return dp[m][n];
     }
 
+    //1161. 最大层内元素和
+    int maxLevelSum(TreeNode* root) {
+        if (!root) {
+            return 0;
+        }
+        queue<TreeNode *> queue;
+        int res = 1;
+        int lv = 1;
+        queue.push(root);
+        int maxSum = root->val;
+        while (!queue.empty()) {
+            int sum = 0;
+            int size = queue.size();
+            for (int i = 0; i < size; i++) {
+                TreeNode *node = queue.front();
+                sum += node->val;
+                queue.pop();
+                if (node->left) {
+                    queue.push(node->left);
+                }
+                if (node->right) {
+                    queue.push(node->right);
+                }
+            }
+            if (sum > maxSum) {
+                res = lv;
+                maxSum = sum;
+            }
+            lv++;
+        }
+        return res;
+    }
+
     //1171.从链表中删去总和值为零的连续节点
     ListNode* removeZeroSumSublists(ListNode* head) {
         ListNode *cur = new ListNode(0);
@@ -4095,6 +4818,50 @@ public:
         return p->next;
     }
 
+    //1268. 搜索推荐系统
+    vector<vector<string>> suggestedProducts(vector<string>& products, string searchWord) {
+        vector<vector<string>> res;
+        Trie *trie = new Trie();
+        for (string w: products) {
+            addWordToTree(trie, w);
+        }
+        Trie *cur = trie;
+        bool flag = false;
+        for (char c: searchWord) {
+            //首字母都没有 那后续都是没有的 直接添加空元素即可
+            if (flag || !cur->childs.count(c)) {
+                flag = true;
+                res.emplace_back();
+            } else {
+                cur = cur->childs[c];
+                vector<string> words;
+                while (!cur->words.empty()) {
+                    words.push_back(cur->words.top());
+                    cur->words.pop();
+                }
+                if (words.size() > 1) {
+                    std::reverse(words.begin(),words.end());
+                }
+                res.push_back(words);
+            }
+        }
+        return res;
+    }
+
+    void addWordToTree(Trie *trie, string word) {
+        Trie *cur = trie;
+        for (char c: word) {
+            if (!cur->childs.count(c)) {
+                cur->childs[c] = new Trie();
+            }
+            cur = cur->childs[c];
+            cur->words.push(word);
+            if (cur->words.size() > 3) {
+                cur->words.pop();
+            }
+        }
+    }
+
     //1290.二进制链表转整数
     int getDecimalValue(ListNode* head) {
         int res = 0;
@@ -4104,6 +4871,79 @@ public:
             head = head->next;
         }
         return res;
+    }
+
+    //1306. 跳跃游戏 III
+    bool canReach(vector<int>& arr, int start) {
+        return dfsCanReach(arr, start);
+    }
+
+    bool dfsCanReach(vector<int>& arr, int start) {
+        if (start < 0 || start >= arr.size() || arr[start] == -1) {
+            return false;
+        }
+        int step = arr[start];
+        arr[start] = -1;
+        return step == 0 || dfsCanReach(arr, start + step) || dfsCanReach(arr, start - step);
+    }
+
+    //1310. 子数组异或查询
+    vector<int> xorQueries(vector<int>& arr, vector<vector<int>>& queries) {
+        vector<int> xors(arr.size(), 0);
+        int tmp = 0;
+        for (int i = 0; i < arr.size(); i++) {
+            tmp ^= arr[i];
+            xors[i] = tmp;
+        }
+        vector<int> res(queries.size(),0);
+        for (int i = 0; i < queries.size(); i++) {
+            int l = queries[i][0];
+            int r = queries[i][1];
+            res[i] = xors[l] ^ xors[r];
+        }
+        return res;
+    }
+
+    //1334. 阈值距离内邻居最少的城市
+    int findTheCity(int n, vector<vector<int>>& edges, int distanceThreshold) {
+        // 定义二维D向量，并初始化各个城市间距离为INT_MAX（无穷）
+        vector <vector<int>> D(n, vector<int>(n, INT_MAX));
+        // 根据edges[][]初始化D[][]
+        for (auto &e : edges) {
+            // 无向图两个城市间的两个方向距离相同
+            D[e[0]][e[1]] = e[2];
+            D[e[1]][e[0]] = e[2];
+        }
+        // Floyd算法
+        for (int k = 0; k < n; k++) {
+            // n个顶点依次作为插入点
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i == j || D[i][k] == INT_MAX || D[k][j] == INT_MAX) {
+                        // 这些情况都不符合下一行的if条件，
+                        // 单独拿出来只是为了防止两个INT_MAX相加导致溢出
+                        continue;
+                    }
+                    D[i][j] = min(D[i][k] + D[k][j], D[i][j]);
+                }
+            }
+        }
+        // 选择出能到达其它城市最少的城市ret
+        int ret;
+        int minNum = INT_MAX;
+        for (int i = 0; i < n; i++) {
+            int cnt = 0;
+            for (int j = 0; j < n; j++) {
+                if (i != j && D[i][j] <= distanceThreshold) {
+                    cnt++;
+                }
+            }
+            if (cnt <= minNum) {
+                minNum = cnt;
+                ret = i;
+            }
+        }
+        return ret;
     }
 
     //1371. 每个元音包含偶数次的最长子字符串
@@ -4139,6 +4979,33 @@ public:
             }
         }
         return res;
+    }
+
+    //1382. 将二叉搜索树变平衡
+    TreeNode* balanceBST(TreeNode* root) {
+        vector<int> res;
+        dfsBalanceBST(root, res);
+        return buildBalanceBST(res, 0, res.size()-1);
+    }
+
+    void dfsBalanceBST(TreeNode* root, vector<int> &res) {
+        if (!root) {
+            return;
+        }
+        dfsBalanceBST(root->left, res);
+        res.push_back(root->val);
+        dfsBalanceBST(root->right, res);
+    }
+
+    TreeNode* buildBalanceBST(vector<int> &res, int l, int r) {
+        if (l > r) {
+            return nullptr;
+        }
+        int mid = l + (r-l)/2;
+        TreeNode *node = new TreeNode(res[mid]);
+        node->left = buildBalanceBST(res, l, mid-1);
+        node->right = buildBalanceBST(res, mid+1, r);
+        return node;
     }
 
     //1402.做菜顺序
@@ -4205,6 +5072,29 @@ public:
             }
         }
         return res;
+    }
+
+    //1446. 连续字符
+    int maxPower(string s) {
+        if (s.size() == 0) {
+            return 0;
+        }
+        if (s.size() == 1) {
+            return 1;
+        }
+        char c = s[0];
+        int res = 1;
+        int count = 1;
+        for (int i = 1; i < s.size(); i++) {
+            if (s[i] == c) {
+                count++;
+                res = max(count, res);
+            } else {
+                count = 1;
+                c = s[i];
+            }
+        }
+        return  res;
     }
 
     //1457. 二叉树中的伪回文路径
@@ -6752,6 +7642,124 @@ public:
             }
         }
         return 0;
+    }
+
+    //7.19周赛
+    int numWaterBottles(int numBottles, int numExchange) {
+        if (numBottles < numExchange) {
+            return numBottles;
+        }
+        int n = numWaterBottlesExchange(numBottles, 0, numExchange);
+        return n;
+    }
+
+    int numWaterBottlesExchange(int numBottles, int empty, int numExchange) {
+        if (numBottles + empty < numExchange) {
+            return numBottles;
+        }
+        int exchange = (numBottles + empty) / numExchange;
+        int newEmpty = (numBottles + empty) % numExchange;
+        return numBottles + numWaterBottlesExchange(exchange, newEmpty, numExchange);
+    }
+
+    vector<int> countSubTrees(int n, vector<vector<int>>& edges, string labels) {
+        vector<vector<int>> graph(n, vector<int>());
+        for (auto v : edges) {
+            graph[v[1]].push_back(v[0]);
+            graph[v[0]].push_back(v[1]);
+        }
+        vector<int> res(n, 1);
+        vector<int> visited(n, 0);
+        vector<int> count(26,0);
+        dfsCountSubTrees(graph, labels, 0, res, visited, count);
+        return res;
+    }
+
+    void dfsCountSubTrees(vector<vector<int>> &graph, string &labels, int node, vector<int> &result, vector<int> &visited, vector<int> &count){
+            int fre = count[labels[node]-'a'];
+            count[labels[node]-'a']++;
+            visited[node] = 1;
+            for(int k=0; k<graph[node].size(); ++k){
+                int i = graph[node][k];
+                if(i == node)
+                    continue;
+                if(visited[i] == 1)
+                    continue;
+                dfsCountSubTrees(graph, labels, i, result, visited, count);
+            }
+            result[node] = count[labels[node]-'a'] - fre;
+            return;
+        }
+
+    int breakfastNumber(vector<int>& staple, vector<int>& drinks, int x) {
+        sort(staple.begin(), staple.end());
+        sort(drinks.begin(), drinks.end());
+        int res = 0;
+        int index = (int)drinks.size() - 1;
+        for (int i = 0; i < (int)staple.size(); i++) {
+            while (index >=0 && staple[i] + drinks[index] > x) {
+                index--;
+            }
+            res += (index + 1);
+        }
+        return res % 100000007;
+    }
+
+    //9.19
+    int paintingPlan(int n, int k) {
+        if (k == 0) {
+            return 1;
+        }
+        if (k < n) {
+            return 0;
+        }
+        if (n == k && n != 1) {
+            return 2 * n;
+        }
+        if (k < 2 * n - 1) {
+            return 0;
+        }
+        if (n * n == k) {
+            return 1;
+        }
+        k = min(k, n * n - k);
+        k = k % (n * n);
+        int res = 0;
+        int c = k;
+        int i = 1;
+        while (k > n) {
+            for (int j = i + 1; j < k; j++) {
+                if (k % j == 0) {
+                    c = k / j;
+                    i = j;
+                }
+            }
+        }
+        if (c > n) {
+            return 0;
+        }
+        res += (n - c + 1) * (n - i + 1);
+
+        return 2 * res;
+    }
+
+    int keyboard(int k, int n) {
+        if (k * 26 < n) {
+            return 0;
+        }
+        vector<int> aaa(26,k);
+        int res = 1;
+        for (int i = 0; i < n; i++) {
+            int num = 0;
+            for (int j = 0; j < 26; j++) {
+                if (aaa[j] > 0) {
+                    num++;
+                }
+            }
+            res *= num;
+            res %= 1000000007;
+        }
+        return res;
     }
 
 };

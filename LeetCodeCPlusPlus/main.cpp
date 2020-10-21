@@ -101,9 +101,11 @@ int main(int argc, const char * argv[]) {
     s.restoreIpAddresses("25525511213");
     s.numSub("01100111");
 
-    vector<vector<int>> edges{vector<int>{2,3},vector<int>{1,2},vector<int>{3,4},vector<int>{1,3},vector<int>{1,4},vector<int>{0,1},vector<int>{2,4},vector<int>{0,4},vector<int>{0,2}};
-    vector<double> pro{0.05,0.26,0.49,0.25,0.2,0.64,0.23,0.21,0.77};
-    s.maxProbability(5,edges,pro,0,3);
+    vector<vector<int>> edges{vector<int>{0,2},vector<int>{0,3},vector<int>{1,2}};
+    s.countSubTrees(4,edges,"aeed");
+
+//    vector<double> pro{0.05,0.26,0.49,0.25,0.2,0.64,0.23,0.21,0.77};
+//    s.maxProbability(5,edges,pro,0,3);
 
 //    vector<int> dd;
 //    dd.push_back(0);
@@ -116,6 +118,7 @@ int main(int argc, const char * argv[]) {
     tt.push_back(cc);
     s.maxValue(tt);
 //    s.rotate(tt);
+    s.compressString2("av");
 
     ListNode *node = new ListNode(1);
     node->next = new ListNode(1);
@@ -144,13 +147,15 @@ int main(int argc, const char * argv[]) {
     root->left = new TreeNode(2);
     s.isValidBST(root);
 
-    TreeNode *xx = new TreeNode(3);
-    xx->left = new TreeNode(2);
-    xx->left->left = new TreeNode(2);
-    xx->left->right = new TreeNode(1);
-    xx->right = new TreeNode(3);
-    xx->right->left = new TreeNode(2);
-    xx->right->right = new TreeNode(0);
+    TreeNode *xx = new TreeNode(1);
+    xx->left = new TreeNode(7);
+    xx->left->left = new TreeNode(7);
+    xx->left->right = new TreeNode(-8);
+    xx->right = new TreeNode(0);
+//    xx->right->left = new TreeNode(2);
+//    xx->right->right = new TreeNode(0);
+    s.maxLevelSum(xx);
+    s.numWaterBottles(15,4);
 
     s.iterationPreOrder(xx);
     s.iterationInOrder(xx);
@@ -179,11 +184,25 @@ int main(int argc, const char * argv[]) {
     vector<int> hhh = vector<int>{1,3};
     vector<int> www = vector<int>{1};
     s.maxArea(5,4,hhh,www);
+    s.combinationSum3(3,9);
+    vector<int> r = vector<int>{4,5,6,7,0,1,2};
+    s.findMin(r);
+    s.paintingPlan(3,5);
 //    s.oddEvenList(node);
 //    s.reorderList(node);
 //    a.push_back(4);
 //    std::cout << s.findWords(a)[0] << std::endl;
 //    std::cout << s.findWords(a)[1] << std::endl;
 //    std::cout << s.permute(a) << std::endl;
+
+    char sc[10];
+    char *t = "0123456789";
+    strcpy(sc,t);
+
+    int i = 2;
+    int *c = (int *)malloc(32);
+    int *d = (int *)malloc(16);
+    printf("%p",c);
+
     return 0;
 }
