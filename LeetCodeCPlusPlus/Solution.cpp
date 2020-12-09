@@ -500,6 +500,52 @@ public:
         return tmp->next;
     }
 
+    //25. K 个一组翻转链表
+    ListNode* reverseKGroup(ListNode* head, int k) {
+        int length = 0;
+        ListNode *dummy = new ListNode(0);
+        dummy->next = head;
+        ListNode *pre = dummy;
+        ListNode *cur = head;
+        ListNode *next = NULL;
+        while (head) {
+            head = head->next;
+            length++;
+        }
+        for (int i = 0; i < length / k; i++) {
+            for (int j = 0; j < k - 1; j++) {
+                next = cur->next;
+                cur->next = next->next;
+                next->next = pre->next;
+                pre->next = next;
+            }
+            pre = cur;
+            cur = next->next;
+        }
+        return dummy->next;
+    }
+
+    ListNode* reverseKGroup2(ListNode* head, int k) {
+        ListNode *cur = head;
+        int count = 0;
+        while (cur && count != k) {
+            cur = cur->next;
+            count++;
+        }
+        if (count == k) {
+            cur = reverseKGroup2(cur, k);
+            while (count != 0) {
+                count--;
+                ListNode *tmp = head->next;
+                head->next = cur;
+                cur = head;
+                head = tmp;
+            }
+            head = cur;
+        }
+        return head;
+    }
+
     //32.最长有效括号
     int longestValidParentheses(string s) {
         stack<int> stack;
@@ -543,6 +589,41 @@ public:
             }
         }
         return -1;
+    }
+
+    //34.在排序数组中查找元素的第一个和最后一个位置
+    vector<int> searchRange(vector<int>& nums, int target) {
+        vector<int> res(2,-1);
+        if (nums.size() < 1) {
+            return res;
+        }
+        int left = searchIndex(nums, target, true);
+        int right = searchIndex(nums, target, false);
+        if (left >= nums.size() || nums[left] != target) {
+            left = -1;
+        }
+        if (right < 0 || nums[right] != target) {
+            right = -1;
+        }
+        res[0] = left;
+        res[1] = right;
+        return res;
+    }
+
+    int searchIndex(vector<int>& nums, int target, bool isLeft) {
+        int l = 0;
+        int r = nums.size();
+        while (l < r) {
+            int mid = l + (r-l)/2;
+            if (nums[mid] == target) {
+                isLeft ? r = mid : l = mid + 1;
+            } else if (nums[mid] < target) {
+                l = mid + 1;
+            } else {
+                r = mid;
+            }
+        }
+        return isLeft ? l : l - 1;
     }
 
     //35.搜索插入位置
@@ -722,6 +803,7 @@ public:
     //47.全排列II
     vector<vector<int>> permuteUnique(vector<int>& nums) {
         vector<vector<int>> res;
+        sort(nums.begin(), nums.end());
         allPermuteUnique(res, nums, 0);
         return res;
     }
@@ -1243,6 +1325,34 @@ public:
             }
         }
         return false;
+    }
+
+    //76. 最小覆盖子串
+    string minWindow(string s, string t) {
+        unordered_map<char, int> map;
+        for (auto c : t) {
+            map[c]++;
+        }
+        int l = 0;
+        int count = 0;
+        int maxl = s.size()+1;
+        int start = l;
+        for (int i = 0; i < s.size(); i++) {
+            if (--map[s[i]] >= 0) {
+                count++;
+            }
+            while (count == t.size()) {
+                if (maxl > i - l + 1) {
+                    maxl = i - l + 1;
+                    start = l;
+                }
+                if (++map[s[l]] > 0) {
+                    count--;
+                }
+                l++;
+            }
+        }
+        return maxl == s.size()+1 ? "" : s.substr(start,maxl);
     }
 
     //78.找子集
@@ -1956,6 +2066,38 @@ public:
         return triangle[0][0];
     }
 
+    //122.买卖股票的最佳时机 II
+    int maxProfit3(vector<int>& prices) {
+        if (prices.size() < 2) {
+            return 0;
+        }
+        int cash = 0;
+        int hold = -prices[0];
+        for (int i = 1; i < prices.size(); i++) {
+            cash = max(cash, hold + prices[i]);
+            hold = max(hold, cash - prices[i]);
+        }
+        return cash;
+    }
+
+    //123.买卖股票的最佳时机 III
+    int maxProfit4(vector<int>& prices) {
+        if (prices.size() < 2) {
+            return 0;
+        }
+        int firbuy = INT_MIN;
+        int secbuy = INT_MIN;
+        int firsell = 0;
+        int secsell = 0;
+        for (auto p : prices) {
+            firbuy = max(firbuy, -p);
+            firsell = max(firsell, firbuy + p);
+            secbuy = max(secbuy, firsell - p);
+            secsell = max(secsell, secbuy + p);
+        }
+        return secsell;
+    }
+
     //124. 二叉树中的最大路径和
     int sum = INT_MIN;
     int maxPathSum(TreeNode* root) {
@@ -2166,6 +2308,20 @@ public:
             dfsSolve(board, row+1, col);
             dfsSolve(board, row-1, col);
         }
+    }
+
+    //134. 加油站
+    int canCompleteCircuit(vector<int>& gas, vector<int>& cost) {
+        int run = 0, rest = 0, start = 0;
+        for (int i = 0; i < gas.size(); i++) {
+            run += (gas[i] - cost[i]);
+            rest += (gas[i] - cost[i]);
+            if (run < 0) {
+                run = 0;
+                start = i + 1;
+            }
+        }
+        return rest < 0 ? -1 : start;
     }
 
     //137.只出现一次的数字||
@@ -2691,6 +2847,24 @@ public:
         }
         return res->next;
     }
+
+    //204.计算质数
+    int countPrimes(int n) {
+        vector<int> isPrime(n,1);
+        int res = 0;
+        for (int i = 2; i < n; i++) {
+            if (isPrime[i] == 1) {
+                res += 1;
+            }
+            if (i * i < n) {
+                for (int j = i * i; j < n; j+=i) {
+                    isPrime[j] = 0;
+                }
+            }
+        }
+        return res;
+    }
+
     //206.反转链表
     ListNode* reverseList(ListNode* head) {
         ListNode* newh = NULL;
@@ -3055,6 +3229,19 @@ public:
         return false;
     }
 
+    //283.移动0
+    void moveZeroes(vector<int>& nums) {
+        int i = 0, j = 0;
+        for (int i; i < nums.size(); i++) {
+            if (nums[i] != 0) {
+                nums[j++] = nums[i];
+            }
+        }
+        while (j < nums.size()) {
+            nums[j++] = 0;
+        }
+    }
+
     //289.生命游戏
     void gameOfLife(vector<vector<int>>& board) {
         vector<vector<int>> status(board.size(), vector<int>(board[0].size(), 0));
@@ -3122,6 +3309,33 @@ public:
             }
         }
         return dp[m-1][n-1];
+    }
+
+    //300. 最长上升子序列
+    //时间复杂度（n^2）
+    int lengthOfLIS(vector<int>& nums) {
+        if (nums.size() < 2) {
+            return nums.size();
+        }
+        vector<int> dp(nums.size(), 1);
+        int res = 1;
+        for (int i = 1; i < nums.size(); i++) {
+            for (int j = 0; j < i; j++) {
+                if (nums[i] > nums[j]) {
+                    dp[i] = max(dp[j] + 1, dp[i]);
+                }
+            }
+            res = max(dp[i], res);
+        }
+        return res;
+    }
+    //时间复杂度（nlogn）
+    int lengthOfLIS2(vector<int>& nums) {
+        if (nums.size() < 2) {
+            return nums.size();
+        }
+        int res = 1;
+        return res;
     }
 
     //309. 最佳买卖股票时机含冷冻期
@@ -3261,6 +3475,20 @@ public:
         return count;
     }
 
+    //383. 赎金信
+    bool canConstruct(string ransomNote, string magazine) {
+        vector<int> magas(26,0);
+        for (auto c : magazine) {
+            magas[c-'a']++;
+        }
+        for (auto c : ransomNote) {
+            if (--magas[c-'a'] < 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     //389.找不同
     //每个字符异或之后 可以得到最后一个字符
     char findTheDifference(string s, string t) {
@@ -3311,6 +3539,24 @@ public:
         for (int i = 1; i < A.size(); i++) {
             F = F - sum + A.size() * A[i-1];
             res = max(res, F);
+        }
+        return res;
+    }
+
+    //406. 根据身高重建队列
+    static bool compare(vector<int>& a, vector<int>& b) {
+        return a[0] > b[0] || (a[0] == b[0] && a[1] < b[1]);
+    }
+
+    vector<vector<int>> reconstructQueue(vector<vector<int>>& people) {
+        sort(people.begin(), people.end(), compare);
+        vector<vector<int>> res;
+        for (int i = 0; i < people.size(); i++) {
+            if (people[i][1] >= res.size()) {
+                res.insert(res.end(), people[i]);
+            } else {
+                res.insert(res.begin() + people[i][1], people[i]);
+            }
         }
         return res;
     }
@@ -3776,6 +4022,22 @@ public:
             return false;
         }
         return dfsSubTree(s->left, t->left) && dfsSubTree(s->right, t->right);
+    }
+
+    //594. 最长和谐子序列
+    int findLHS(vector<int>& nums) {
+        unordered_map<int, int> map;
+        int res = 0;
+        for (auto i : nums) {
+            map[i]++;
+            if (map[i-1] > 0) {
+                res = max(res, map[i-1]+map[i]);
+            }
+            if (map[i+1] > 0) {
+                res = max(res, map[i+1]+map[i]);
+            }
+        }
+        return res;
     }
 
     //637.二叉树的层平均值
@@ -4357,6 +4619,71 @@ public:
         return ss == st;
     }
 
+    //861. 翻转矩阵后的得分
+    //第一列肯定要全部为1 所以先模拟为每一行先翻转，后面再从第二列开始 计算每一列中0、1个数，最多的那个为准。
+    int matrixScore(vector<vector<int>>& A) {
+        int m = A.size();
+        int n = A[0].size();
+        int res = m * (1 << (n-1));
+        for (int i = 1; i < n; i++) {
+            int countOne = 0;
+            for (int j = 0; j < m; j++) {
+                if (A[j][0] == 1) {
+                    countOne += A[j][i];
+                } else {
+                    countOne += (1- A[j][i]);
+                }
+            }
+            countOne = max(countOne, m - countOne);
+            res += countOne * (1 << (n-1-i));
+        }
+        return res;
+    }
+
+    //863. 二叉树中所有距离为 K 的结点
+    //到某个节点距离K 把二叉树分成两个树 一个是target作为根节点 找距离K的节点，另外一个是target的父节点为根节点的树 找距离为k-1的节点
+
+    //或者是把二叉树构建成一个图 再用bfs
+    TreeNode *f;
+    vector<int> res;
+    bool dfsDistanceK(TreeNode *root, TreeNode *target, TreeNode *father) {
+        if (root == NULL) {
+            return false;
+        }
+        if (root == target) {
+            f = father;
+            return true;
+        }
+        if (dfsDistanceK(root->left, target, root)) {
+            root->left = father;
+            return true;
+        }
+        if (dfsDistanceK(root->right, target, root)) {
+            root->right = father;
+            return true;
+        }
+        return false;
+    }
+
+    void collect(TreeNode *node, int n, int K) {
+        if (node == NULL) {
+            return;
+        }
+        if (K == n) {
+            res.push_back(node->val);
+        } else {
+            collect(node->left, n+1, K);
+            collect(node->right, n+1, K);
+        }
+    }
+
+    vector<int> distanceK(TreeNode* root, TreeNode* target, int K) {
+        dfsDistanceK(root, target, NULL);
+        collect(f, 0, K-1);
+        collect(target, 0, K);
+        return res;
+    }
+
     //876.删除链表中间节点
     //快慢指针方法：当快指针走完 慢指针就是中间节点
     ListNode* middleNode(ListNode* head) {
@@ -4575,6 +4902,22 @@ public:
             c *= 2;
         }
         return res;
+    }
+
+    //1010. 总持续时间可被 60 整除的歌曲
+    int numPairsDivisibleBy60(vector<int>& time) {
+        vector<int> record(60,0);
+        int count = 0;
+        for (int i = 0; i < time.size(); i++) {
+            int t = time[i] % 60;
+            if (t == 0) {
+                count += record[0];
+            } else {
+                count += record[60-t];
+            }
+            record[t]++;
+        }
+        return count;
     }
 
     //1014 最佳观光组合
@@ -4885,6 +5228,18 @@ public:
         int step = arr[start];
         arr[start] = -1;
         return step == 0 || dfsCanReach(arr, start + step) || dfsCanReach(arr, start - step);
+    }
+
+    //1309. 解码字母到整数映射
+    //反向遍历
+    string freqAlphabets(string s) {
+        string res;
+        for (int i = s.size() - 1; i >= 0; i--) {
+            int c = s[i] == '#' ? s[--i] - '1' + (s[--i] - '0')*10 : s[i] - '1';
+            res.push_back('a'+c);
+        }
+        std::reverse(res.begin(), res.end());
+        return res;
     }
 
     //1310. 子数组异或查询
@@ -5980,6 +6335,42 @@ public:
         return res;
     }
 
+    //面试题 17.12 直方图的水量
+    int trap3(vector<int>& height) {
+        int size = height.size();
+        vector<int> left(size,0);
+        vector<int> right(size,0);
+        for (int i = 1; i < size; i++) {
+            left[i] = max(left[i-1], height[i-1]);
+        }
+        for (int i = size - 2; i >= 0; i--) {
+            right[i] = max(right[i+1], height[i+1]);
+        }
+        int res = 0;
+        for (int i = 0; i < size; i++) {
+            int level = min(left[i], right[i]);
+            res += max(level - height[i], 0);
+        }
+        return res;
+    }
+
+    int trap4(vector<int>& height) {
+        int left = 0, right = height.size() - 1, leftM = height[left], rightM = height[right];
+        int res = 0;
+        while (left < right) {
+            leftM = max(leftM, height[left]);
+            rightM = max(rightM, height[right]);
+            if (leftM < rightM) {
+                res += leftM - height[left];
+                left++;
+            } else {
+                res += rightM - height[right];
+                right--;
+            }
+        }
+        return res;
+    }
+
     //面试题 17.13. 恢复空格
     //dp 遍历到i位置的时候依次在dict里面找是否存在相应的string， 如果找到了 就dp[i+1] = min(dp[i+1],dp[i+1-len])
     int respace(vector<string>& dictionary, string sentence) {
@@ -6075,6 +6466,51 @@ public:
             }
         }
         return vector<int>{a,b};
+    }
+
+    //面试题 17.22. 单词转换
+    vector<string> findLadders2(string beginWord, string endWord, vector<string>& wordList) {
+        vector<string> res;
+        res.push_back(beginWord);
+        vector<bool> visited(wordList.size(),false);
+        if (dfsfindLadders2(res, beginWord, endWord, wordList, visited)) {
+            return res;
+        }
+        return vector<string>();
+    }
+
+    bool dfsfindLadders2(vector<string>& res, string begin, string end, vector<string>& wordList, vector<bool>& visited) {
+        if (begin == end) {
+            return true;
+        }
+        for (int i = 0; i < wordList.size(); i++) {
+            if (visited[i] || !canTransFormString(begin, wordList[i])) {
+                continue;
+            }
+            visited[i] = true;
+            res.push_back(wordList[i]);
+            if (dfsfindLadders2(res, wordList[i], end, wordList, visited)) {
+                return true;
+            }
+            res.pop_back();
+        }
+        return false;
+    }
+
+    bool canTransFormString(string from, string to) {
+        if (from.size() != to.size()) {
+            return false;
+        }
+        int count = 0;
+        for (int i = 0; i < from.size(); i++) {
+            if (count > 1) {
+                return false;
+            }
+            if (from[i] != to[i]) {
+                count++;
+            }
+        }
+        return count == 1;
     }
 
     //链表头插法 尾插法
@@ -6932,6 +7368,40 @@ public:
             nums[left] = tmp[index];
         }
     }
+
+
+    void mergeSort3(vector<int>& nums, int left, int right, vector<int>& tmp) {
+        if (left < right) {
+            int mid = left + (right-left)/2;
+            mergeSort3(nums, left, mid, tmp);
+            mergeSort3(nums, mid+1, right, tmp);
+
+        }
+    }
+
+    void merge3(vector<int>& nums, int left, int right, int mid, vector<int>& tmp) {
+        int i = left;
+        int j = mid + 1;
+        int k = 0;
+        while (i <= mid && j <= right) {
+            if (nums[i] > nums[j]) {
+                tmp[k++] = nums[j++];
+            } else {
+                nums[k++] = nums[i++];
+            }
+        }
+        while (i <= mid) {
+            tmp[k++] = nums[i++];
+        }
+        while (j <= right) {
+            tmp[k++] = nums[j++];
+        }
+        for (int index = 0; left <= right; left++, index++) {
+            nums[left] = tmp[index];
+        }
+    }
+
+
 
     //复习堆排序
     void heapSort(vector<int>& nums, int len) {

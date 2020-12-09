@@ -37,11 +37,16 @@ void dfs(int i) {
 }
 
 int main(int argc, const char * argv[]) {
+
     // insert code here...
     dfs(1);
 
     std::cout << "Hello, World!\n";
     Solution s = Solution();
+    s.freqAlphabets("10#11#12");
+    vector<int> vvvvvvvv = vector<int>{2,3,1,0,2,5,4};
+    s.findRepeatNumber(vvvvvvvv);
+
     vector<int> a;
     a.push_back(2);
     s.missingTwo(a);
@@ -188,6 +193,8 @@ int main(int argc, const char * argv[]) {
     vector<int> r = vector<int>{4,5,6,7,0,1,2};
     s.findMin(r);
     s.paintingPlan(3,5);
+    vector<vector<int>> yyyy = vector<vector<int>>{{7,0},{4,4},{7,1},{5,0},{6,1},{5,2}};
+    s.reconstructQueue(yyyy);
 //    s.oddEvenList(node);
 //    s.reorderList(node);
 //    a.push_back(4);

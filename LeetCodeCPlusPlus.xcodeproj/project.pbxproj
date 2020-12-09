@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B515160B21E592B1007ACD86 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B515160A21E592B1007ACD86 /* main.cpp */; };
 		B515161321E592D0007ACD86 /* Solution.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B515161121E592D0007ACD86 /* Solution.cpp */; };
+		B5469F702566552F005D636E /* LRU.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B5469F6E2566552F005D636E /* LRU.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +29,8 @@
 		B515160A21E592B1007ACD86 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		B515161121E592D0007ACD86 /* Solution.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Solution.cpp; sourceTree = "<group>"; };
 		B515161221E592D0007ACD86 /* Solution.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Solution.hpp; sourceTree = "<group>"; };
+		B5469F6E2566552F005D636E /* LRU.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = LRU.cpp; sourceTree = "<group>"; };
+		B5469F6F2566552F005D636E /* LRU.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = LRU.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +66,8 @@
 				B515160A21E592B1007ACD86 /* main.cpp */,
 				B515161121E592D0007ACD86 /* Solution.cpp */,
 				B515161221E592D0007ACD86 /* Solution.hpp */,
+				B5469F6E2566552F005D636E /* LRU.cpp */,
+				B5469F6F2566552F005D636E /* LRU.hpp */,
 			);
 			path = LeetCodeCPlusPlus;
 			sourceTree = "<group>";
@@ -123,6 +128,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B5469F702566552F005D636E /* LRU.cpp in Sources */,
 				B515161321E592D0007ACD86 /* Solution.cpp in Sources */,
 				B515160B21E592B1007ACD86 /* main.cpp in Sources */,
 			);
